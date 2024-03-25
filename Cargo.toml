@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aws-config = "1.1.1"
+aws-sdk-ssm = "1.9.0"
+color-eyre = "0.6.2"
+crossterm = "0.27.0"
+ratatui = "0.25.0"
+tokio = { version = "1.35.1", features = ["full"] }
