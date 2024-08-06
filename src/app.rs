@@ -1,3 +1,6 @@
+use std::fmt::Error;
+
+mod aws;
 // ANCHOR: action
 pub enum Action {
     Tick,
@@ -16,6 +19,7 @@ pub struct App {
     pub should_quit: bool,
     /// counter
     pub counter: u8,
+    pub parameter_store_names: Vec<String>
 }
 // ANCHOR_END: application
 
@@ -25,6 +29,21 @@ impl App {
     pub fn new() -> Self {
         Self::default()
     }
+
+    pub async fn setup_parameter_stores(&mut self){
+        match aws::parameter_store::fetch_ps().await   {
+            Ok(res) => {
+                for list in res.iter() {
+                    match &list {
+                        Some(name) => self.parameter_store_names.push(name.clone()),
+                        _ => panic!("error")
+                    }
+                }
+            }
+            _ => panic!("Error")
+        };
+    }
+
 
     /// Handles the tick event of the terminal.
     pub fn tick(&self) {}

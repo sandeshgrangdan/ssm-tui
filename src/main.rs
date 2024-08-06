@@ -24,11 +24,14 @@ use update::update;
 // ANCHOR_END: imports_main
 
 // ANCHOR: main
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     // Create an application.
     let mut app = App::new();
 
-    // Initialize the terminal user interface.
+    app.setup_parameter_stores().await;
+
+    // // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
     let terminal = Terminal::new(backend)?;
     let events = EventHandler::new(250);
