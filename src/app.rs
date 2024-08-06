@@ -2,6 +2,9 @@ use std::fmt::Error;
 use ratatui::{
     widgets::{ListState}
 };
+use aws_sdk_ssm::{
+    types::ParameterMetadata,
+};
 
 mod aws;
 // ANCHOR: action
@@ -19,6 +22,8 @@ pub struct StatefulList {
     pub state: ListState,
     pub items: Vec<String>,
     pub last_selected: Option<usize>,
+    pub ps_metadata: Vec<ParameterMetadata>
+    
 }
 
 impl StatefulList {
@@ -26,14 +31,8 @@ impl StatefulList {
         Self { 
             state: ListState::default(), 
             items: vec![], 
-            last_selected: None
-        }
-    }
-    pub fn with_items(items: Vec<String>) -> StatefulList{
-        StatefulList{
-            state: ListState::default(),
-            items: items,
             last_selected: None,
+            ps_metadata: vec![]
         }
     }
 
@@ -83,7 +82,7 @@ pub struct App {
     pub should_quit: bool,
     /// counter
     pub counter: u8,
-    pub parameter_store_names: StatefulList
+    pub parameter_store_names: StatefulList,
 }
 // ANCHOR_END: application
 
@@ -95,8 +94,9 @@ impl App {
 
         match aws::parameter_store::fetch_ps().await   {
             Ok(res) => {
-                for list in res.iter() {
-                    match &list {
+                for parameter_metadata in res.iter() {
+                    state_full_list_set.ps_metadata.push(parameter_metadata.clone());
+                    match &parameter_metadata.name {
                         Some(name) => state_full_list_set.items.push(name.to_string()),
                         _ => panic!("error")
                     }
