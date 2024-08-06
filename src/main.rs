@@ -27,9 +27,7 @@ use update::update;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create an application.
-    let mut app = App::new();
-
-    app.setup_parameter_stores().await;
+    let mut app = App::new().await;
 
     // // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());

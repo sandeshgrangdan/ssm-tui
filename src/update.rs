@@ -12,6 +12,8 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
         }
         KeyCode::Right | KeyCode::Char('j') => app.increment_counter(),
         KeyCode::Left | KeyCode::Char('k') => app.decrement_counter(),
+        KeyCode::Down => app.parameter_store_names.next(),
+        KeyCode::Up => app.parameter_store_names.previous(),
         _ => {}
     };
 }
