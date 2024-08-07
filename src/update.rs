@@ -10,10 +10,16 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
                 app.quit()
             }
         }
-        KeyCode::Right | KeyCode::Char('j') => app.increment_counter(),
-        KeyCode::Left | KeyCode::Char('k') => app.decrement_counter(),
-        KeyCode::Down => app.parameter_store_names.next(),
-        KeyCode::Up => app.parameter_store_names.previous(),
+        KeyCode::Right | KeyCode::Char('j') => app.increment_scrol(),
+        KeyCode::Left | KeyCode::Char('k') => app.decrement_scrol(),
+        KeyCode::Down => {
+            app.clear_scrol();
+            app.parameter_store_names.next()
+        },
+        KeyCode::Up => {
+            app.clear_scrol();
+            app.parameter_store_names.previous()
+        },
         _ => {}
     };
 }

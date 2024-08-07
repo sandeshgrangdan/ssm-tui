@@ -20,7 +20,7 @@ pub fn render_ps_list(app: &mut App, f: &mut Frame, layout: Rect){
                 .add_modifier(Modifier::BOLD)
                 .add_modifier(Modifier::REVERSED)
             )
-            .highlight_symbol(">>")
+            .highlight_symbol(">")
             .repeat_highlight_symbol(true);
         
 

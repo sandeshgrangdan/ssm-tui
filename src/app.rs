@@ -22,7 +22,8 @@ pub struct StatefulList {
     pub state: ListState,
     pub items: Vec<String>,
     pub last_selected: Option<usize>,
-    pub ps_metadata: Vec<ParameterMetadata>
+    pub ps_metadata: Vec<ParameterMetadata>,
+    pub ps_values : Vec<String>
     
 }
 
@@ -32,7 +33,8 @@ impl StatefulList {
             state: ListState::default(), 
             items: vec![], 
             last_selected: None,
-            ps_metadata: vec![]
+            ps_metadata: vec![],
+            ps_values: vec![]
         }
     }
 
@@ -83,6 +85,7 @@ pub struct App {
     /// counter
     pub counter: u8,
     pub parameter_store_names: StatefulList,
+    pub scroll: u16
 }
 // ANCHOR_END: application
 
@@ -92,9 +95,10 @@ impl App {
     pub async fn new() -> Self {
         let mut state_full_list_set = StatefulList::new();
 
-        match aws::parameter_store::fetch_ps().await   {
-            Ok(res) => {
-                for parameter_metadata in res.iter() {
+        match aws::parameter_store::fetch_ps().await {
+            Ok((ps_metadata,ps_values)) => {
+                state_full_list_set.ps_values = ps_values;
+                for parameter_metadata in ps_metadata.iter() {
                     state_full_list_set.ps_metadata.push(parameter_metadata.clone());
                     match &parameter_metadata.name {
                         Some(name) => state_full_list_set.items.push(name.to_string()),
@@ -107,7 +111,8 @@ impl App {
         Self {
             parameter_store_names: state_full_list_set,
             should_quit: false,
-            counter: 0
+            counter: 0,
+            scroll: 0
         }
     }
 
@@ -130,6 +135,40 @@ impl App {
         if let Some(res) = self.counter.checked_sub(1) {
             self.counter = res;
         }
+    }
+
+    pub fn get_selected_metadata(&self) -> &ParameterMetadata {
+        let selected_ps_index = match self.parameter_store_names.state.selected() {
+            Some(metadata) => metadata,
+            None => 0
+        };
+    
+        &self.parameter_store_names.ps_metadata[selected_ps_index]
+    }
+
+    pub fn get_selected_value(&self) -> &String {
+        let selected_ps_index = match self.parameter_store_names.state.selected() {
+            Some(metadata) => metadata,
+            None => 0
+        };
+    
+        &self.parameter_store_names.ps_values[selected_ps_index]
+    }
+
+    pub fn increment_scrol(&mut self){
+        self.scroll += 1;
+    }
+
+    pub fn decrement_scrol(&mut self){
+        if(self.scroll == 0){
+            self.scroll = 0;
+        }else{
+            self.scroll -= 1;
+        }
+    }
+
+    pub fn clear_scrol(&mut self){
+        self.scroll = 0;
     }
 }
 // ANCHOR_END: application_impl
