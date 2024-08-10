@@ -6,7 +6,17 @@ use aws_sdk_ssm::{
     types::ParameterMetadata,
 };
 
+pub mod ps_list_filter;
 mod aws;
+
+use ps_list_filter::user_input::{
+    PsListFilterInput,
+    InputMode::{
+        Normal,
+        Editing
+    }
+};
+
 // ANCHOR: action
 pub enum Action {
     Tick,
@@ -85,7 +95,9 @@ pub struct App {
     /// counter
     pub counter: u8,
     pub parameter_store_names: StatefulList,
-    pub scroll: u16
+    pub scroll: u16,
+    pub filter_ps_list : bool,
+    pub ps_filter_data: PsListFilterInput
 }
 // ANCHOR_END: application
 
@@ -112,7 +124,9 @@ impl App {
             parameter_store_names: state_full_list_set,
             should_quit: false,
             counter: 0,
-            scroll: 0
+            scroll: 0,
+            filter_ps_list : false,
+            ps_filter_data : PsListFilterInput::new()
         }
     }
 
@@ -169,6 +183,15 @@ impl App {
 
     pub fn clear_scrol(&mut self){
         self.scroll = 0;
+    }
+
+    pub fn toggle_search(&mut self){
+        if self.filter_ps_list{
+            self.ps_filter_data.input_mode = Normal;
+        }else {
+            self.ps_filter_data.input_mode = Editing;
+        }
+        self.filter_ps_list = !self.filter_ps_list
     }
 }
 // ANCHOR_END: application_impl

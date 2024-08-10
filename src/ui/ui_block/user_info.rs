@@ -1,26 +1,34 @@
 use ratatui::{
-    layout::Layout, 
     prelude::*, 
     style::{Color, Style}, 
-    widgets::{Block, BorderType, Borders, List, ListState, Paragraph, Wrap}
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap}
 };
 use crate::app::App;
 
-pub fn render_user_info(app: &mut App, f: &mut Frame, layout: Rect){
+pub fn render_user_info(_app: &mut App, f: &mut Frame, layout: Rect){
+    let text = vec![
+        "Use `Esc`, `Ctrl-C` or `q` to stop running.".into(),
+        "Use `▲ ▼` to select list.".into(),
+        "Use `◄ ►` to scrol value.".into(),
+        Line::from(vec![
+            Span::styled("Use `/` to filter list",
+            Style::default().fg(Color::Rgb((255), (51), (221))))
+        ]),
+    ];
+
     f.render_widget(
-        Paragraph::new(format!(
-            "
-        Press `Esc`, `Ctrl-C` or `q` to stop running.      ",
-        )).wrap(Wrap { trim: true })
+        Paragraph::new(text).wrap(Wrap { trim: true })
         .block(
             Block::default()
-                .title("User Info")
-                .title_alignment(Alignment::Center)
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                // .title("User Info")
+                // .title_alignment(Alignment::Center)
+                .borders(Borders::NONE)
+                .border_type(BorderType::Rounded)
+                .padding(Padding::new(1, 1, 1, 1)),
         )
-        .style(Style::default().fg(Color::Yellow))
-        .alignment(Alignment::Center),
+        .style(Style::default().fg(Color::Rgb((239), (184), (135))))
+        .alignment(Alignment::Left)
+        ,
         layout,
     );
 }

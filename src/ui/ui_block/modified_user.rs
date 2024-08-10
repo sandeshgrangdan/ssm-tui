@@ -1,10 +1,9 @@
 use ratatui::{
-    layout::Layout, 
     prelude::*, 
     style::{Color, Style}, 
-    widgets::{Block, BorderType, Borders, List, ListState, Paragraph, Wrap}
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap}
 };
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 
 use crate::app::App;
 
@@ -29,24 +28,23 @@ pub fn render_modified_user(app: &mut App, f: &mut Frame, layout: Rect){
     // Format the DateTime to the desired format
     let formatted_date = datetime.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
 
-
+    let text = vec![
+        Line::from(vec!["User 👤: ".green().bold(), modified_user.green().bold()]),
+        Line::from(vec!["Date 📅: ".green().bold(), formatted_date.green().bold()]),
+    ];
 
     f.render_widget(
-        Paragraph::new(format!(
-            "User: {}.\n
-            Date: {}.\n
-            ",modified_user,
-            formatted_date
-        )).wrap(Wrap { trim: true })
+        Paragraph::new(text).wrap(Wrap { trim: true })
         .block(
             Block::default()
                 .title("Last modified")
-                .title_alignment(Alignment::Center)
+                // .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                .border_type(BorderType::Rounded)
+                .padding(Padding::new(1, 1, 1, 1)),
         )
-        .style(Style::default().fg(Color::Yellow))
-        .alignment(Alignment::Center),
+        .style(Style::default().fg(Color::Yellow)),
+        // .alignment(Alignment::Left),
         layout,
     );
 }

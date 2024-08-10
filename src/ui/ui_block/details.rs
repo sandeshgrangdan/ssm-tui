@@ -3,7 +3,14 @@ use ratatui::{
     text::Text,
     prelude::*, 
     style::{Color, Style}, 
-    widgets::{Block, BorderType, Borders, List, ListState, Paragraph, Wrap}
+    widgets::{
+        Block, 
+        BorderType, 
+        Borders, 
+        Paragraph, 
+        Wrap,
+        Padding
+    }
 };
 use crate::app::App;
 
@@ -16,7 +23,7 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
         None => ""
     };
 
-    let text = Text::from(format!("\n{}",ps_value));
+    let text = Text::from(format!("{}",ps_value));
 
     let paragraph = Paragraph::new(text)
             .block(Block::default().title("Configuration").borders(Borders::ALL))
@@ -28,12 +35,13 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
         paragraph
         .block(
             Block::default()
-                .title(ps_desc)
+                .title(format!("Value({})",ps_desc))
                 .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                .border_type(BorderType::Double)
+                .padding(Padding::new(1, 1, 1, 1)),
         )
-        .style(Style::default().fg(Color::Yellow)),
+        .style(Style::default().fg(Color::Rgb((83), (178), (226)))),
         // .alignment(Alignment::Center),
         layout,
     );

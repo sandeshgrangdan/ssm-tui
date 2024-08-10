@@ -11,7 +11,7 @@ pub fn render_ps_list(app: &mut App, f: &mut Frame, layout: Rect){
             .block(
                 Block::default()
                 .title("PS (List)")
-                .title_alignment(Alignment::Center)
+                // .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
                 .border_type(BorderType::Rounded),
             )

@@ -1,8 +1,9 @@
+use color_eyre::owo_colors::OwoColorize;
 use ratatui::{
     layout::Layout, 
     prelude::*, 
     style::{Color, Style}, 
-    widgets::{Block, BorderType, Borders, List, ListState, Paragraph, Wrap}
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap}
 };
 use aws_sdk_ssm::types::{
     ParameterType::{
@@ -16,6 +17,8 @@ use aws_sdk_ssm::types::{
         Standard,
     }
 };
+use chrono::{DateTime, Utc};
+
 use crate::app::App;
 
 
@@ -54,25 +57,64 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
         None => "No description for this parameter store."
     };
 
+    let modified_user = match &ps_metadata.last_modified_user{
+        Some(name) => name,
+        None => ""
+    };
+
+
+    let modified_date = match &ps_metadata.last_modified_date {
+        Some(date) => date,
+        None => panic!("Error for Datetime")
+    };
+
+
+    // Create a DateTime<Utc> from the timestamp and subsecond nanoseconds
+    let datetime: DateTime<Utc> = DateTime::from_timestamp(modified_date.secs(), modified_date.subsec_nanos()).unwrap();
+
+    // Format the DateTime to the desired format
+    let formatted_date = datetime.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
+
+    let first_text_color = Style::default().fg(Color::Rgb((255), (126), (0)));
+
+    let text = vec![
+        Line::from(vec![
+            Span::styled("Type:        ",first_text_color),
+            ps_type.gray().bold()
+        ]),
+        Line::from(vec![
+            Span::styled("Tier:        ",first_text_color),
+            ps_tire.gray().bold()
+        ]),
+        Line::from(vec![
+            Span::styled("Data type:   ", first_text_color),
+            ps_data_type.gray().bold()
+        ]),
+        Line::from(vec![
+            Span::styled("Description: ", first_text_color),
+            ps_desc.gray().bold()
+        ]),
+        Line::from(vec![
+            Span::styled("User :       ", first_text_color),
+            modified_user.gray().bold()
+        ]),
+        Line::from(vec![
+            Span::styled("Date :       ", first_text_color),
+            formatted_date.gray().bold()
+        ]),
+    ];
+
     f.render_widget(
-        Paragraph::new(format!(
-            "\nType: `{}`\n\
-            Tier: `{}`\n\
-            Data type: `{}`\n\
-            Description: `{}`",
-            ps_type.to_uppercase(),
-            ps_tire.to_uppercase(),
-            ps_data_type.to_uppercase(),
-            ps_desc
-        )).wrap(Wrap {trim: true})
+        Paragraph::new(text).wrap(Wrap {trim: true})
         .block(
             Block::default()
-                .title("Metadata")
+                // .title("Metadata")
                 // .title_alignment(Alignment::Center)
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded),
+                .borders(Borders::NONE)
+                .border_type(BorderType::Rounded)
+                .padding(Padding::new(1, 1, 1, 1)),
         )
-        .style(Style::default().fg(Color::Yellow)),
+        .style(Style::default().fg(Color::White)),
         // .alignment(Alignment::Center),
         layout,
     );
