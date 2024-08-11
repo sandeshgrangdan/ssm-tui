@@ -15,7 +15,7 @@ pub struct PsListFilterInput {
     /// Current input mode
     pub input_mode: InputMode,
     /// History of recorded messages
-    pub messages: Vec<String>,
+    pub default_messages: String,
 }
 
 impl PsListFilterInput {
@@ -23,7 +23,7 @@ impl PsListFilterInput {
         Self {
             input: String::new(),
             input_mode: InputMode::Normal,
-            messages: Vec::new(),
+            default_messages: String::from("all"),
             character_index: 0,
         }
     }
@@ -87,7 +87,7 @@ impl PsListFilterInput {
     }
 
     pub fn submit_message(&mut self) {
-        self.messages.push(self.input.clone());
+        // self.messages.push(self.input.clone());
         self.input.clear();
         self.reset_cursor();
     }

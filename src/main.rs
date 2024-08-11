@@ -21,6 +21,8 @@ use event::{Event, EventHandler};
 use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
+use crossterm::event::{self as my_event, KeyCode};
+
 // ANCHOR_END: imports_main
 
 // ANCHOR: main
@@ -32,21 +34,32 @@ async fn main() -> Result<()> {
     // // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
     let terminal = Terminal::new(backend)?;
-    let events = EventHandler::new(250);
-    let mut tui = Tui::new(terminal, events);
+
+    // let events = EventHandler::new(10);
+    let mut tui = Tui::new(terminal);
     tui.enter()?;
 
     // Start the main loop.
     while !app.should_quit {
         // Render the user interface.
         tui.draw(&mut app)?;
+
         // Handle events.
-        match tui.events.next()? {
-            Event::Tick => {}
-            Event::Key(key_event) => update(&mut app, key_event),
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
-        };
+
+        if let Ok(event) = my_event::read() {
+            match event {
+                my_event::Event::Key(key_event) => update(&mut app, key_event, &mut tui).await,
+                _ => {}
+            }
+        }
+        // if !app.is_vim_open {
+        //     match events.next()? {
+        //         Event::Tick => {}
+        //         Event::Key(key_event) => update(&mut app, key_event, &mut tui),
+        //         Event::Mouse(_) => {}
+        //         Event::Resize(_, _) => {}
+        //     };
+        // }
     }
 
     // Exit the user interface.

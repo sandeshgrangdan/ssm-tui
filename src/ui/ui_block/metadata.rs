@@ -88,7 +88,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
         ]),
         Line::from(vec![
             Span::styled("Data type:   ", first_text_color),
-            ps_data_type.gray().bold()
+            ps_data_type.to_uppercase().gray().bold()
         ]),
         Line::from(vec![
             Span::styled("Description: ", first_text_color),
@@ -110,8 +110,8 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
             Block::default()
                 // .title("Metadata")
                 // .title_alignment(Alignment::Center)
-                .borders(Borders::NONE)
-                .border_type(BorderType::Rounded)
+                .borders(Borders::LEFT)
+                .border_type(BorderType::QuadrantInside)
                 .padding(Padding::new(1, 1, 1, 1)),
         )
         .style(Style::default().fg(Color::White)),

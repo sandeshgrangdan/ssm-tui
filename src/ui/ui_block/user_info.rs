@@ -22,8 +22,8 @@ pub fn render_user_info(_app: &mut App, f: &mut Frame, layout: Rect){
             Block::default()
                 // .title("User Info")
                 // .title_alignment(Alignment::Center)
-                .borders(Borders::NONE)
-                .border_type(BorderType::Rounded)
+                .borders(Borders::RIGHT)
+                .border_type(BorderType::QuadrantInside)
                 .padding(Padding::new(1, 1, 1, 1)),
         )
         .style(Style::default().fg(Color::Rgb((239), (184), (135))))

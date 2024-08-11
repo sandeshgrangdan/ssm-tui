@@ -1,4 +1,9 @@
 use std::fmt::Error;
+use std::io;
+use std::process::Command;
+use rand::Rng;
+use std::fs::{self, File};
+use std::io::{ Write};
 use ratatui::{
     widgets::{ListState}
 };
@@ -97,7 +102,7 @@ pub struct App {
     pub parameter_store_names: StatefulList,
     pub scroll: u16,
     pub filter_ps_list : bool,
-    pub ps_filter_data: PsListFilterInput
+    pub ps_filter_data: PsListFilterInput,
 }
 // ANCHOR_END: application
 
@@ -126,7 +131,7 @@ impl App {
             counter: 0,
             scroll: 0,
             filter_ps_list : false,
-            ps_filter_data : PsListFilterInput::new()
+            ps_filter_data : PsListFilterInput::new(),
         }
     }
 
@@ -192,6 +197,38 @@ impl App {
             self.ps_filter_data.input_mode = Editing;
         }
         self.filter_ps_list = !self.filter_ps_list
+    }
+
+    fn generate_random_file_name(&self) -> String {
+        let mut rng = rand::thread_rng();
+        let random_string: String = (0..10)
+            .map(|_| rng.sample(rand::distributions::Alphanumeric) as char)
+            .collect();
+        format!("/tmp/{}.txt", random_string) // Creating the file in /tmp directory
+    }
+
+    pub async fn launch_vim(&mut self) -> io::Result<()> {
+        let temp_file_path = &self.generate_random_file_name();
+
+        let mut file = File::create(temp_file_path)?;
+        file.write_all(self.get_selected_value().as_bytes())?;
+        drop(file);
+
+        Command::new("vim")
+            .arg(temp_file_path) // Specify the file you want to edit with Vim
+            .status()?;
+
+        let edited_value = fs::read_to_string(temp_file_path)?;
+
+        let ps_metadata = self.get_selected_metadata();
+
+        let parameter_name = match &ps_metadata.name {
+            Some(my_ps_description) => my_ps_description,
+            None => ""
+        };
+
+        aws::parameter_store::edit_ps_value(parameter_name, edited_value).await;
+        Ok(())
     }
 }
 // ANCHOR_END: application_impl

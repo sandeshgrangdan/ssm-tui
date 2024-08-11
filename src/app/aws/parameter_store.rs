@@ -2,18 +2,22 @@
 use aws_config::meta::region::RegionProviderChain;
 use aws_config::BehaviorVersion;
 use aws_sdk_ssm::{
-    types::ParameterMetadata,
-    Client, Error
+    client, types::ParameterMetadata, Client, Error
 };
 
-pub async fn fetch_ps() -> Result<(Vec<ParameterMetadata>, Vec<String>),Error> {
 
+async fn get_aws_client() -> Result<Client,Error> {
     let region_provider = RegionProviderChain::default_provider().or_else("ap-southeast-1");
     let config = aws_config::defaults(BehaviorVersion::latest())
         .region(region_provider)
         .load()
         .await;
-    let client = Client::new(&config);
+
+    Ok(Client::new(&config))
+}
+
+pub async fn fetch_ps() -> Result<(Vec<ParameterMetadata>, Vec<String>),Error> {
+    let client = get_aws_client().await?;
 
     println!("Getting parameters:");
     let resp = client.
@@ -50,20 +54,27 @@ async fn get_ps_value(name: &String, client : Client) -> Result<String, Error>{
             .name(name)
             .with_decryption(true)
             .send()
-            .await?;
-
-    let mut ps_value = "".to_string();
-
-    if let Some(parameter) = result.parameter {
-        if let Some(value) = parameter.value {
-            ps_value = value;
-        } else {
-            ps_value = "Parameter value is empty or not set.".to_string();
-        }
-    } else {
-        println!("Parameter not found.");
-    }
+            .await?
+            .parameter()
+            .unwrap()
+            .value()
+            .unwrap()
+            .to_string();
     
-    Ok(ps_value)
+    Ok(result)
 
+}
+
+pub async fn edit_ps_value(parameter_name: &str, edited_value: String) -> Result<(),Error>{
+    let client = get_aws_client().await?;
+
+    client
+        .put_parameter()
+        .name(parameter_name)
+        .value(edited_value)
+        .overwrite(true)
+        .send()
+        .await?;
+
+    Ok(())
 }

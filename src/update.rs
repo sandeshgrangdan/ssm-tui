@@ -1,9 +1,11 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers,KeyEventKind};
+use tokio::runtime::Runtime;
 
 use crate::app::App;
+use crate::tui::Tui;
 use crate::app::ps_list_filter::user_input::InputMode;
 
-pub fn update(app: &mut App, key_event: KeyEvent) {
+pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
     match app.ps_filter_data.input_mode {
         InputMode::Normal => match key_event.code {
             KeyCode::Esc | KeyCode::Char('q') => app.quit(),
@@ -25,10 +27,19 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
             KeyCode::Char('/')  => {
                 app.toggle_search();
             },
+            KeyCode::Char('e')  => {
+                    let _ = tui.init_vim();
+
+                    if let Err(e) = app.launch_vim().await {
+                        eprintln!("Error launching Vim: {}", e);
+                    }
+
+                    let _ = tui.exit_vim();
+            },
             _ => {}
         },
         InputMode::Editing if key_event.kind == KeyEventKind::Press => match key_event.code {
-            KeyCode::Enter => app.ps_filter_data.submit_message(),
+            KeyCode::Enter => app.toggle_search(),
             KeyCode::Char(to_insert) => {
                 app.ps_filter_data.enter_char(to_insert);
             }
@@ -41,6 +52,14 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
             KeyCode::Right => {
                 app.ps_filter_data.move_cursor_right();
             }
+            KeyCode::Down => {
+                app.clear_scrol();
+                app.parameter_store_names.next()
+            },
+            KeyCode::Up => {
+                app.clear_scrol();
+                app.parameter_store_names.previous()
+            },
             KeyCode::Esc => {
                 app.toggle_search();
             }

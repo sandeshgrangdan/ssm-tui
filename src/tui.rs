@@ -23,16 +23,14 @@ use crate::{app::App, event::EventHandler, ui};
 pub struct Tui {
     /// Interface to the Terminal.
     terminal: CrosstermTerminal,
-    /// Terminal event handler.
-    pub events: EventHandler,
 }
 // ANCHOR_END: tui
 
 // ANCHOR: tui_enter
 impl Tui {
     /// Constructs a new instance of [`Tui`].
-    pub fn new(terminal: CrosstermTerminal, events: EventHandler) -> Self {
-        Self { terminal, events }
+    pub fn new(terminal: CrosstermTerminal) -> Self {
+        Self { terminal }
     }
 
     /// Initializes the terminal interface.
@@ -93,6 +91,26 @@ impl Tui {
     pub fn exit(&mut self) -> Result<()> {
         Self::reset()?;
         self.terminal.show_cursor()?;
+        Ok(())
+    }
+
+    pub fn init_vim(&mut self) -> Result<()> {
+        self.terminal.clear()?;
+        self.terminal.show_cursor()?;
+        self.terminal.flush()?;
+        terminal::disable_raw_mode()?;
+
+        Ok(())
+    }
+
+    pub fn exit_vim(&mut self) -> Result<()>{
+        terminal::enable_raw_mode()?;
+        crossterm::execute!(
+            io::stderr(),
+            EnterAlternateScreen,
+            EnableMouseCapture
+        )?;
+
         Ok(())
     }
     // ANCHOR_END: tui_exit

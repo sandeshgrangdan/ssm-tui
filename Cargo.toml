@@ -11,5 +11,6 @@ aws-sdk-ssm = "1.9.0"
 chrono = "0.4.38"
 color-eyre = "0.6.2"
 crossterm = "0.27.0"
+rand = "0.8.5"
 ratatui = "0.25.0"
 tokio = { version = "1.35.1", features = ["full"] }
