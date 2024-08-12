@@ -81,12 +81,12 @@ impl StatefulList {
         self.state.select(Some(i));
     }
 
-    fn unselect(&mut self) {
-        let offset = self.state.offset();
-        self.last_selected = self.state.selected();
-        self.state.select(None);
-        *self.state.offset_mut() = offset;
-    }
+    // fn unselect(&mut self) {
+    //     let offset = self.state.offset();
+    //     self.last_selected = self.state.selected();
+    //     self.state.select(None);
+    //     *self.state.offset_mut() = offset;
+    // }
 }
 
 // ANCHOR: application
