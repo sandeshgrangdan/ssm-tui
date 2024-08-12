@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use aws_config::meta::region::RegionProviderChain;
 use aws_config::BehaviorVersion;
 use aws_sdk_ssm::{
-    types::ParameterMetadata, types::Parameter, Client, Error
+    types::ParameterMetadata, Client, Error
 };
 
 
@@ -19,68 +19,51 @@ async fn get_aws_client() -> Result<Client,Error> {
 }
 
 pub async fn fetch_ps() -> Result<(HashMap<String, ParameterMetadata>, HashMap<String, String>, Vec<String>),Error> {
+    println!("🔄 Fetching data from the server...");
     let client = get_aws_client().await?;
 
-    let mut parameters_data: Vec<Parameter> = vec![];
+    let mut parameters_data: Vec<ParameterMetadata> = vec![];
 
     let mut next_token: Option<String> = None;
 
     loop {
-        // let request = client.
-        //     describe_parameters()
-        //     .max_results(50)
-        //     .set_next_token(next_token)
-        //     .send()
-        //     .await?;
-
-        // if let Some(metadata) = request.parameters {
-        //     parameters_data.extend(metadata);
-        // }
-
-        // next_token = request.next_token;
-        // if next_token.is_none() {
-        //     break;
-        // }
-
-        let mut request = client.get_parameters_by_path()
-            .path('/')
-            .recursive(true)
-            .with_decryption(true)
-            .set_next_token(next_token)
+        let request = client.
+            describe_parameters()
             .max_results(50)
+            .set_next_token(next_token)
             .send()
             .await?;
 
-         if let Some(metadata) = request.parameters {
+        if let Some(metadata) = request.parameters {
             parameters_data.extend(metadata);
         }
-
 
         next_token = request.next_token;
         if next_token.is_none() {
             break;
         }
-
     }
 
     let mut items: Vec<String> = vec![];
     let mut parameters: HashMap<String, ParameterMetadata>  = HashMap::new();
     let mut ps_values: HashMap<String, String> = HashMap::new();
+
+    println!("📡 Connecting to the server for {} data pieces, our hamster is running as fast as it can! 🐹",parameters_data.len());
+    println!("💨 Please wait...");
     for parameter in parameters_data {
-        // let ps_name = match &parameter.name {
-        //     Some(name) => name,
-        //     None => &String::new()
-        // };
-        // items.push(ps_name.clone());
-        // let ps_value_res = get_ps_value(&ps_name, client.clone()).await;
-        // match ps_value_res  {
-        //     Ok(ps_value) => {
-        //         ps_values.insert((&ps_name).to_string(), ps_value);
-        //     }
-        //     Err(err) => panic!("Error: {}",err)
-        // }
-        // parameters.insert((&ps_name).to_string(), parameter.clone());
-        println!(" {:?}", parameter);
+        let ps_name = match &parameter.name {
+            Some(name) => name,
+            None => &String::new()
+        };
+        items.push(ps_name.clone());
+        let ps_value_res = get_ps_value(&ps_name, client.clone()).await;
+        match ps_value_res  {
+            Ok(ps_value) => {
+                ps_values.insert((&ps_name).to_string(), ps_value);
+            }
+            Err(err) => panic!("Error: {}",err)
+        }
+        parameters.insert((&ps_name).to_string(), parameter.clone());
     }
     
     Ok((parameters,ps_values,items))

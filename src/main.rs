@@ -32,38 +32,38 @@ async fn main() -> Result<()> {
     let mut app = App::new().await;
 
     // Initialize the terminal user interface.
-    // let backend = CrosstermBackend::new(std::io::stderr());
-    // let terminal = Terminal::new(backend)?;
+    let backend = CrosstermBackend::new(std::io::stderr());
+    let terminal = Terminal::new(backend)?;
 
-    // // let events = EventHandler::new(10);
-    // let mut tui = Tui::new(terminal);
-    // tui.enter()?;
+    // let events = EventHandler::new(10);
+    let mut tui = Tui::new(terminal);
+    tui.enter()?;
 
-    // // Start the main loop.
-    // while !app.should_quit {
-    //     // Render the user interface.
-    //     tui.draw(&mut app)?;
+    // Start the main loop.
+    while !app.should_quit {
+        // Render the user interface.
+        tui.draw(&mut app)?;
 
-    //     // Handle events.
+        // Handle events.
 
-    //     if let Ok(event) = my_event::read() {
-    //         match event {
-    //             my_event::Event::Key(key_event) => update(&mut app, key_event, &mut tui).await,
-    //             _ => {}
-    //         }
-    //     }
-    //     // if !app.is_vim_open {
-    //     //     match events.next()? {
-    //     //         Event::Tick => {}
-    //     //         Event::Key(key_event) => update(&mut app, key_event, &mut tui),
-    //     //         Event::Mouse(_) => {}
-    //     //         Event::Resize(_, _) => {}
-    //     //     };
-    //     // }
-    // }
+        if let Ok(event) = my_event::read() {
+            match event {
+                my_event::Event::Key(key_event) => update(&mut app, key_event, &mut tui).await,
+                _ => {}
+            }
+        }
+        // if !app.is_vim_open {
+        //     match events.next()? {
+        //         Event::Tick => {}
+        //         Event::Key(key_event) => update(&mut app, key_event, &mut tui),
+        //         Event::Mouse(_) => {}
+        //         Event::Resize(_, _) => {}
+        //     };
+        // }
+    }
 
-    // // Exit the user interface.
-    // tui.exit()?;
+    // Exit the user interface.
+    tui.exit()?;
     Ok(())
 }
 // ANCHOR_END: main

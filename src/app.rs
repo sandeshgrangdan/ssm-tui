@@ -238,7 +238,7 @@ impl App {
 
         self.parameter_stores.ps_values.insert((ps_name).to_string(), (&edited_value).to_string());
 
-        // let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value).await;
+        let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value).await;
         Ok(())
     }
 }
