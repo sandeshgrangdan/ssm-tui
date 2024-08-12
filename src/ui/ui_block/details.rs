@@ -1,5 +1,4 @@
 use ratatui::{
-    layout::Layout,
     text::Text,
     prelude::*, 
     style::{Color, Style}, 
@@ -13,15 +12,19 @@ use ratatui::{
     }
 };
 use crate::app::App;
+use crate::app::PsMetadata;
 
 pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
-    let ps_metadata = app.get_selected_metadata();
-    let ps_value: &String  = app.get_selected_value();
-
-    let ps_desc = match &ps_metadata.name {
-        Some(my_ps_description) => my_ps_description,
-        None => ""
-    };
+    let mut ps_value : String = String::from("No data found.");
+    let mut ps_name : &String = &String::from("No data found");
+    
+    match app.get_selected_ps_data(){
+        PsMetadata::Data(_, value,name ) => {
+            ps_value = value;
+            ps_name = name;
+        }
+        PsMetadata::None => {}
+    }
 
     let text = Text::from(format!("{}",ps_value));
 
@@ -35,11 +38,11 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
         paragraph
         .block(
             Block::default()
-                .title(format!("Value({})",ps_desc))
+                .title(format!("Value({})",ps_name))
                 .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
                 .border_type(BorderType::Double)
-                .padding(Padding::new(1, 1, 1, 1)),
+                .padding(Padding::new(1, 1, 0, 1)),
         )
         .style(Style::default().fg(Color::Rgb((83), (178), (226)))),
         // .alignment(Alignment::Center),

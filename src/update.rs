@@ -1,5 +1,4 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers,KeyEventKind};
-use tokio::runtime::Runtime;
 
 use crate::app::App;
 use crate::tui::Tui;
@@ -18,16 +17,16 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
             KeyCode::Left | KeyCode::Char('k') => app.decrement_scrol(),
             KeyCode::Down => {
                 app.clear_scrol();
-                app.parameter_store_names.next()
+                app.parameter_stores.next()
             },
             KeyCode::Up => {
                 app.clear_scrol();
-                app.parameter_store_names.previous()
+                app.parameter_stores.previous()
             },
             KeyCode::Char('/')  => {
                 app.toggle_search();
             },
-            KeyCode::Char('e')  => {
+            KeyCode::Char('e') | KeyCode::Enter => {
                     let _ = tui.init_vim();
 
                     if let Err(e) = app.launch_vim().await {
@@ -41,24 +40,28 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
         InputMode::Editing if key_event.kind == KeyEventKind::Press => match key_event.code {
             KeyCode::Enter => app.toggle_search(),
             KeyCode::Char(to_insert) => {
+                app.parameter_stores.state.select(Some(0));
                 app.ps_filter_data.enter_char(to_insert);
             }
             KeyCode::Backspace => {
+                app.parameter_stores.state.select(Some(0));
                 app.ps_filter_data.delete_char();
             }
             KeyCode::Left => {
+                app.parameter_stores.state.select(Some(0));
                 app.ps_filter_data.move_cursor_left();
             }
             KeyCode::Right => {
+                app.parameter_stores.state.select(Some(0));
                 app.ps_filter_data.move_cursor_right();
             }
             KeyCode::Down => {
                 app.clear_scrol();
-                app.parameter_store_names.next()
+                app.parameter_stores.next()
             },
             KeyCode::Up => {
                 app.clear_scrol();
-                app.parameter_store_names.previous()
+                app.parameter_stores.previous()
             },
             KeyCode::Esc => {
                 app.toggle_search();

@@ -4,6 +4,7 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap}
 };
 use crate::app::App;
+use crate::app::ps_list_filter::user_input::InputMode;
 
 pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect){
     let first_text_color = Style::default().fg(Color::Rgb((255), (126), (0)));
@@ -30,4 +31,17 @@ pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect){
         ,
         layout,
     );
+
+    match app.ps_filter_data.input_mode {
+        InputMode::Normal =>
+            // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
+            {}
+
+        InputMode::Editing => {
+            // Make the cursor visible and ask ratatui to put it at the specified coordinates after
+            // rendering
+            #[allow(clippy::cast_possible_truncation)]
+            f.set_cursor(layout.x + app.ps_filter_data.character_index as u16 + 6,layout.y + 1);
+        }
+    }
 }

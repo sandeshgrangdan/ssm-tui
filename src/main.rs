@@ -17,11 +17,11 @@ pub mod update;
 // ANCHOR_END: declare_mods
 use app::App;
 use color_eyre::Result;
-use event::{Event, EventHandler};
+// use event::{Event, EventHandler};
 use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
-use crossterm::event::{self as my_event, KeyCode};
+use crossterm::event::{self as my_event};
 
 // ANCHOR_END: imports_main
 
@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
     // Create an application.
     let mut app = App::new().await;
 
-    // // Initialize the terminal user interface.
+    // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
     let terminal = Terminal::new(backend)?;
 

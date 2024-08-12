@@ -1,8 +1,10 @@
+use std::collections::HashMap;
+
 // #[derive:(derive)]
 use aws_config::meta::region::RegionProviderChain;
 use aws_config::BehaviorVersion;
 use aws_sdk_ssm::{
-    client, types::ParameterMetadata, Client, Error
+    types::ParameterMetadata, Client, Error
 };
 
 
@@ -16,35 +18,52 @@ async fn get_aws_client() -> Result<Client,Error> {
     Ok(Client::new(&config))
 }
 
-pub async fn fetch_ps() -> Result<(Vec<ParameterMetadata>, Vec<String>),Error> {
+pub async fn fetch_ps() -> Result<(HashMap<String, ParameterMetadata>, HashMap<String, String>, Vec<String>),Error> {
     let client = get_aws_client().await?;
 
-    println!("Getting parameters:");
-    let resp = client.
-        describe_parameters().
-        max_results(50).
-        send().await?;
-    println!("Parameter store fetched:");
+    let mut parameters_data: Vec<ParameterMetadata> = vec![];
 
-    let mut parameters: Vec<ParameterMetadata>  = vec![];
-    let mut ps_values: Vec<String> = vec![];
-    for parameter in resp.parameters() {
+    let mut next_token: Option<String> = None;
+
+    loop {
+        let request = client.
+            describe_parameters()
+            .max_results(50)
+            .set_next_token(next_token)
+            .send()
+            .await?;
+
+        if let Some(metadata) = request.parameters {
+            parameters_data.extend(metadata);
+        }
+
+        next_token = request.next_token;
+        if next_token.is_none() {
+            break;
+        }
+    }
+
+    let mut items: Vec<String> = vec![];
+    let mut parameters: HashMap<String, ParameterMetadata>  = HashMap::new();
+    let mut ps_values: HashMap<String, String> = HashMap::new();
+    for parameter in parameters_data {
         let ps_name = match &parameter.name {
             Some(name) => name,
-            None => &String::from("")
+            None => &String::new()
         };
-        let ps_value_res = get_ps_value(ps_name, client.clone()).await;
+        items.push(ps_name.clone());
+        let ps_value_res = get_ps_value(&ps_name, client.clone()).await;
         match ps_value_res  {
             Ok(ps_value) => {
-                ps_values.push(ps_value)
+                ps_values.insert((&ps_name).to_string(), ps_value);
             }
             Err(err) => panic!("Error: {}",err)
         }
-        parameters.push(parameter.clone());
+        parameters.insert((&ps_name).to_string(), parameter.clone());
         // println!(" {:?}", parameter);
     }
     
-    Ok((parameters,ps_values))
+    Ok((parameters,ps_values,items))
 }
 
 async fn get_ps_value(name: &String, client : Client) -> Result<String, Error>{

@@ -11,7 +11,11 @@ pub fn render_user_info(_app: &mut App, f: &mut Frame, layout: Rect){
         "Use `▲ ▼` to select list.".into(),
         "Use `◄ ►` to scrol value.".into(),
         Line::from(vec![
-            Span::styled("Use `/` to filter list",
+            Span::styled("Use `/` to filter list.",
+            Style::default().fg(Color::Rgb((255), (51), (221))))
+        ]),
+        Line::from(vec![
+            Span::styled("Use `e` or `Enter` to edit parameter store.",
             Style::default().fg(Color::Rgb((255), (51), (221))))
         ]),
     ];
