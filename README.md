@@ -13,7 +13,7 @@ This project serves as a learning exercise in [Rust](https://www.rust-lang.org/)
 
 To get the project up and running, follow these steps:
 
-1. Clone the repository: `git clinegit@github.com:sandeshgrangdan/ssm-tui.git`
+1. Clone the repository: `git clone git@github.com:sandeshgrangdan/ssm-tui.git`
 2. Start the server: `cargo run`
 
 ## Installation
