@@ -84,7 +84,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
         PsMetadata::None => {}
     }
 
-    let first_text_color = Style::default().fg(Color::Rgb((255), (126), (0)));
+    let first_text_color = Style::default().fg(Color::Rgb(255, 126, 0));
 
     let text = vec![
         Line::from(vec![

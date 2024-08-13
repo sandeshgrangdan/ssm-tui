@@ -53,32 +53,36 @@ impl StatefulList {
 
     pub fn next(&mut self) {
 
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.display_items.len() - 1 {
-                    0
-                } else {
-                    i + 1
+        if self.display_items.len() > 0 {
+            let i = match self.state.selected() {
+                Some(i) => {
+                    if i >= self.display_items.len() - 1 {
+                        0
+                    } else {
+                        i + 1
+                    }
                 }
-            }
-            None => self.last_selected.unwrap_or(0),
-        };
-
-        self.state.select(Some(i));
+                None => self.last_selected.unwrap_or(0),
+            };
+    
+            self.state.select(Some(i));
+        }
     }
 
     pub fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.display_items.len() - 1
-                } else {
-                    i - 1
+        if self.display_items.len() > 0 {
+            let i = match self.state.selected() {
+                Some(i) => {
+                    if i == 0 {
+                        self.display_items.len() - 1
+                    } else {
+                        i - 1
+                    }
                 }
-            }
-            None => self.last_selected.unwrap_or(0),
-        };
-        self.state.select(Some(i));
+                None => self.last_selected.unwrap_or(0),
+            };
+            self.state.select(Some(i));
+        }
     }
 
     // fn unselect(&mut self) {
@@ -159,7 +163,7 @@ impl App {
             };
 
 
-            return PsMetadata::Data((metadata),(value),(ps_name))
+            return PsMetadata::Data(metadata,value,ps_name)
         }
 
        PsMetadata::None
@@ -186,7 +190,7 @@ impl App {
     }
 
     pub fn decrement_scrol(&mut self){
-        if(self.scroll == 0){
+        if self.scroll == 0 {
             self.scroll = 0;
         }else{
             self.scroll -= 1;

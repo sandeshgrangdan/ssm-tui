@@ -12,11 +12,11 @@ pub fn render_user_info(_app: &mut App, f: &mut Frame, layout: Rect){
         "Use `◄ ►` to scrol value.".into(),
         Line::from(vec![
             Span::styled("Use `/` to filter list.",
-            Style::default().fg(Color::Rgb((255), (51), (221))))
+            Style::default().fg(Color::Rgb(255, 51, 221)))
         ]),
         Line::from(vec![
             Span::styled("Use `e` or `Enter` to edit parameter store.",
-            Style::default().fg(Color::Rgb((255), (51), (221))))
+            Style::default().fg(Color::Rgb(255, 51, 221)))
         ]),
     ];
 
@@ -30,7 +30,7 @@ pub fn render_user_info(_app: &mut App, f: &mut Frame, layout: Rect){
                 .border_type(BorderType::QuadrantInside)
                 .padding(Padding::new(1, 1, 1, 1)),
         )
-        .style(Style::default().fg(Color::Rgb((239), (184), (135))))
+        .style(Style::default().fg(Color::Rgb(239, 184, 135)))
         .alignment(Alignment::Left)
         ,
         layout,

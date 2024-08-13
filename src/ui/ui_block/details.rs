@@ -44,7 +44,7 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
                 .border_type(BorderType::Double)
                 .padding(Padding::new(1, 1, 0, 1)),
         )
-        .style(Style::default().fg(Color::Rgb((83), (178), (226)))),
+        .style(Style::default().fg(Color::Rgb(83, 178, 226))),
         // .alignment(Alignment::Center),
         layout,
     );

@@ -7,7 +7,7 @@ use crate::app::App;
 use crate::app::ps_list_filter::user_input::InputMode;
 
 pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect){
-    let first_text_color = Style::default().fg(Color::Rgb((255), (126), (0)));
+    let first_text_color = Style::default().fg(Color::Rgb(255, 126, 0));
     
     let text = vec![
         Line::from(vec![
