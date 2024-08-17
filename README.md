@@ -2,6 +2,8 @@
 
 This project serves as a learning exercise in [Rust](https://www.rust-lang.org/), [Tokio](https://tokio.rs/), [Channels](https://tokio.rs/tokio/tutorial/channels), and TUI (Terminal User Interface) programming. It is a DevOps tool used to manages existing Parameter Store with a Terminal User Interface (TUI), utilizing technologies such as Tokio, Ratatui and Vim.
 
+<img width="1166" alt="Screenshot 2024-08-17 at 10 50 15 PM" src="https://github.com/user-attachments/assets/2ef5e441-6b99-4eea-86b2-b553bb788cea">
+
 ## Prerequisite
 1. [Install](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) AWS CLI.
 2. [Vim](https://github.com/vim/vim)
