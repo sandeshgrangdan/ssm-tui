@@ -108,11 +108,11 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
             ps_desc.gray().bold()
         ]),
         Line::from(vec![
-            Span::styled("User :       ", first_text_color),
+            Span::styled("User:        ", first_text_color),
             modified_user.gray().bold()
         ]),
         Line::from(vec![
-            Span::styled("Date :       ", first_text_color),
+            Span::styled("Date:        ", first_text_color),
             formatted_date.gray().bold()
         ])
     ];
@@ -125,7 +125,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
                 // .title_alignment(Alignment::Center)
                 .borders(Borders::LEFT)
                 .border_type(BorderType::QuadrantInside)
-                .padding(Padding::new(1, 1, 1, 1)),
+                .padding(Padding::new(2, 1, 1, 1)),
         )
         .style(Style::default().fg(Color::White)),
         // .alignment(Alignment::Center),

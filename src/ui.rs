@@ -10,7 +10,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
     let main_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(vec![
-            Constraint::Length(8),
+            Constraint::Length(9),
             Constraint::Percentage(100),
         ])
         .split(f.size());
@@ -18,8 +18,8 @@ pub fn render(app: &mut App, f: &mut Frame) {
     let top_layout = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(vec![
-            Constraint::Percentage(70),
-            Constraint::Min(30),
+            Constraint::Percentage(60),
+            Constraint::Min(40),
         ])
         .split(main_layout[0]);
     

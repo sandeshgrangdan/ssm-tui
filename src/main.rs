@@ -2,18 +2,15 @@
 // ANCHOR: declare_mods
 /// Application.
 pub mod app;
-
 /// Terminal events handler.
 pub mod event;
-
 /// Widget renderer.
 pub mod ui;
-
 /// Terminal user interface.
 pub mod tui;
+pub mod update;
 
 /// Application updater.
-pub mod update;
 // ANCHOR_END: declare_mods
 use app::App;
 use clap::Parser;
@@ -23,20 +20,17 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
 use crossterm::event::{self as my_event};
-
 // use tokio::task;
-
 // ANCHOR_END: imports_main
-
 
 // ANCHOR: main
 #[tokio::main]
 async fn main() -> Result<()> {
 
     // Create an application.
-    let mut app = App::new(app::Args::parse()).await;
+    let mut app = App::new(app::Args::parse());
+    app.set_ssm_client().await;
 
-    // let mut app_clone = app.clone(); // Clone the app for the task
     // task::spawn(async move {
         app.fetch_ps_data().await;
     // });
@@ -51,6 +45,7 @@ async fn main() -> Result<()> {
 
     // Start the main loop.
     while !&app.should_quit {
+        app.set_ps_list();
         // Render the user interface.
         tui.draw(&mut app)?;
 
@@ -62,6 +57,7 @@ async fn main() -> Result<()> {
                 _ => {}
             }
         }
+        // Not working for VIM editor.
         // if !app.is_vim_open {
         //     match events.next()? {
         //         Event::Tick => {}
@@ -71,7 +67,6 @@ async fn main() -> Result<()> {
         //     };
         // }
     }
-
     // Exit the user interface.
     tui.exit()?;
     Ok(())
