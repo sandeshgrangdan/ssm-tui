@@ -1,26 +1,54 @@
 use std::collections::HashMap;
 
-// #[derive:(derive)]
 use aws_config::meta::region::RegionProviderChain;
-use aws_config::BehaviorVersion;
+use aws_config::{BehaviorVersion, Region};
 use aws_sdk_ssm::{
     types::ParameterMetadata, Client, Error
 };
+use aws_config::profile::ProfileFileRegionProvider;
 
 
-async fn get_aws_client() -> Result<Client,Error> {
-    let region_provider = RegionProviderChain::default_provider().or_else("ap-southeast-1");
-    let config = aws_config::defaults(BehaviorVersion::latest())
-        .region(region_provider)
-        .load()
-        .await;
-
-    Ok(Client::new(&config))
+pub async fn get_aws_client(profile: String,region: String) -> Client {
+    let default_region = "us-east-1";
+    if profile == String::from("None") {
+        Client::new(
+            &aws_config::defaults(BehaviorVersion::latest())
+            .region(
+                if region != String::from("None") {
+                    RegionProviderChain::first_try(Region::new(region))
+                            .or_default_provider()
+                            .or_else(Region::new(default_region))
+                    } else {
+                        RegionProviderChain::default_provider()
+                            .or_else(Region::new(default_region))
+                    }
+                )
+                .load()
+                .await
+            )
+        } else {
+            Client::new(
+                &aws_config::defaults(BehaviorVersion::latest())
+                .region(
+                    if region == String::from("None") {
+                        RegionProviderChain::first_try(ProfileFileRegionProvider::builder().profile_name(profile.clone()).build())
+                            .or_default_provider()
+                            .or_else(Region::new(default_region))
+                    } else {
+                        RegionProviderChain::first_try(Region::new(region))
+                            .or_default_provider()
+                            .or_else(Region::new(default_region))
+                        }
+                )
+                .profile_name(profile)
+                .load()
+                .await
+            )
+        }
 }
 
-pub async fn fetch_ps() -> Result<(HashMap<String, ParameterMetadata>, HashMap<String, String>, Vec<String>),Error> {
+pub async fn fetch_ps(client: &Client) -> Result<(HashMap<String, ParameterMetadata>, HashMap<String, String>, Vec<String>),Error> {
     println!("🔄 Fetching data from the server...");
-    let client = get_aws_client().await?;
 
     let mut parameters_data: Vec<ParameterMetadata> = vec![];
 
@@ -87,9 +115,7 @@ async fn get_ps_value(name: &String, client : Client) -> Result<String, Error>{
 
 }
 
-pub async fn edit_ps_value(parameter_name: &str, edited_value: String) -> Result<(),Error>{
-    let client = get_aws_client().await?;
-
+pub async fn edit_ps_value(parameter_name: &str, edited_value: String, client : &Client) -> Result<(),Error>{
     client
         .put_parameter()
         .name(parameter_name)

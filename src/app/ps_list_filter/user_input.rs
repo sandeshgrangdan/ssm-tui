@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum InputMode {
     #[default]
     Normal,
@@ -6,7 +6,7 @@ pub enum InputMode {
 }
 
 /// App holds the state of the application
-#[derive(Debug, Default)]
+#[derive(Debug, Clone)]
 pub struct PsListFilterInput {
     /// Current value of the input box
     pub input: String,

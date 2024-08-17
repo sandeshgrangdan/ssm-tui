@@ -1,9 +1,10 @@
 use std::collections::HashMap;
-use std::io;
-use std::process::Command;
+use std::{
+    io::{self, Write},
+    process::Command,
+    fs::{self, File},
+};
 use rand::Rng;
-use std::fs::{self, File};
-use std::io::Write;
 use ratatui::widgets::ListState;
 use aws_sdk_ssm::types::ParameterMetadata;
 
@@ -17,18 +18,25 @@ use ps_list_filter::user_input::{
         Editing
     }
 };
+use clap::{Parser};
+use aws_sdk_ssm::Client;
 
-// ANCHOR: action
-pub enum Action {
-    Tick,
-    Increment,
-    Decrement,
-    Quit,
-    None,
-}
 // ANCHOR_END: action
 
-#[derive(Debug, Default)]
+#[derive(Parser, Debug, Default)]
+#[command(version, about, long_about = None)]
+pub struct Args {
+    /// Name of your AWS profile.
+    #[arg(short, long, default_value_t = String::from("None"))]
+    profile: String,
+
+    /// AWS Region.
+    #[arg(short, long, default_value_t = String::from("None"))]
+    region: String,
+}
+
+
+#[derive(Debug, Clone)]
 pub struct StatefulList {
     pub state: ListState,
     pub items: Vec<String>,
@@ -36,7 +44,6 @@ pub struct StatefulList {
     pub last_selected: Option<usize>,
     pub ps_metadata: HashMap<String, ParameterMetadata>,
     pub ps_values : HashMap<String, String>
-    
 }
 
 impl StatefulList {
@@ -95,7 +102,7 @@ impl StatefulList {
 
 // ANCHOR: application
 /// Application.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone)]
 pub struct App {
     /// should the application exit?
     pub should_quit: bool,
@@ -105,6 +112,7 @@ pub struct App {
     pub scroll: u16,
     pub filter_ps_list : bool,
     pub ps_filter_data: PsListFilterInput,
+    ssm_client: Client
 }
 // ANCHOR_END: application
 
@@ -116,26 +124,28 @@ pub enum PsMetadata<'a, 'b> {
 // ANCHOR: application_impl
 impl App {
     /// Constructs a new instance of [`App`].
-    pub async fn new() -> Self {
-        let mut state_full_list_set = StatefulList::new();
-
-        match aws::parameter_store::fetch_ps().await {
-            Ok((ps_metadata,ps_values,items)) => {
-                state_full_list_set.ps_values = ps_values;
-                state_full_list_set.ps_metadata = ps_metadata;
-                state_full_list_set.items = items.clone();
-                state_full_list_set.display_items = items;
-            }
-            Err(err) => println!("{:?}",err)
-        };
+    pub async fn new(args: Args) -> Self {
         Self {
-            parameter_stores: state_full_list_set,
+            parameter_stores: StatefulList::new(),
             should_quit: false,
             counter: 0,
             scroll: 0,
             filter_ps_list : false,
             ps_filter_data : PsListFilterInput::new(),
+            ssm_client: aws::parameter_store::get_aws_client(args.profile, args.region).await
         }
+    }
+
+    pub async fn fetch_ps_data(&mut self){
+        match aws::parameter_store::fetch_ps(&self.ssm_client).await {
+            Ok((ps_metadata,ps_values,items)) => {
+                self.parameter_stores.ps_values = ps_values;
+                self.parameter_stores.ps_metadata = ps_metadata;
+                self.parameter_stores.items = items.clone();
+                self.parameter_stores.display_items = items;
+            }
+            Err(err) => println!("{:?}",err)
+        };
     }
 
     /// Set should_quit to true to quit the application.
@@ -161,7 +171,6 @@ impl App {
                 Some(value) => value.to_string(),
                 None => "".to_string()
             };
-
 
             return PsMetadata::Data(metadata,value,ps_name)
         }
@@ -241,8 +250,9 @@ impl App {
         let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
         self.parameter_stores.ps_values.insert((ps_name).to_string(), (&edited_value).to_string());
+       
+        let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value, &self.ssm_client).await;
 
-        let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value).await;
         Ok(())
     }
 }

@@ -16,6 +16,7 @@ pub mod tui;
 pub mod update;
 // ANCHOR_END: declare_mods
 use app::App;
+use clap::Parser;
 use color_eyre::Result;
 // use event::{Event, EventHandler};
 use ratatui::{backend::CrosstermBackend, Terminal};
@@ -23,13 +24,22 @@ use tui::Tui;
 use update::update;
 use crossterm::event::{self as my_event};
 
+// use tokio::task;
+
 // ANCHOR_END: imports_main
+
 
 // ANCHOR: main
 #[tokio::main]
 async fn main() -> Result<()> {
+
     // Create an application.
-    let mut app = App::new().await;
+    let mut app = App::new(app::Args::parse()).await;
+
+    // let mut app_clone = app.clone(); // Clone the app for the task
+    // task::spawn(async move {
+        app.fetch_ps_data().await;
+    // });
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
@@ -40,7 +50,7 @@ async fn main() -> Result<()> {
     tui.enter()?;
 
     // Start the main loop.
-    while !app.should_quit {
+    while !&app.should_quit {
         // Render the user interface.
         tui.draw(&mut app)?;
 
