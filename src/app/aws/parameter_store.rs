@@ -3,10 +3,18 @@ use std::collections::HashMap;
 use aws_config::meta::region::RegionProviderChain;
 use aws_config::{BehaviorVersion, Region};
 use aws_sdk_ssm::{
-    types::ParameterMetadata, Client, Error
+    types::{
+        ParameterMetadata,
+        ParameterStringFilter
+    }, Client, Error
 };
 use aws_config::profile::ProfileFileRegionProvider;
 
+#[derive(Debug)]
+pub enum PsMetadata {
+    Data(ParameterMetadata),
+    None
+}
 
 pub async fn get_aws_client(profile: String,region: String) -> Client {
     let default_region = "us-east-1";
@@ -84,7 +92,7 @@ pub async fn fetch_ps(client: &Client) -> Result<(HashMap<String, ParameterMetad
             None => &String::new()
         };
         items.push(ps_name.clone());
-        let ps_value_res = get_ps_value(&ps_name, client.clone()).await;
+        let ps_value_res = get_ps_value(&ps_name, client).await;
         match ps_value_res  {
             Ok(ps_value) => {
                 ps_values.insert((&ps_name).to_string(), ps_value);
@@ -97,7 +105,7 @@ pub async fn fetch_ps(client: &Client) -> Result<(HashMap<String, ParameterMetad
     Ok((parameters,ps_values,items))
 }
 
-async fn get_ps_value(name: &String, client : Client) -> Result<String, Error>{
+pub async fn get_ps_value(name: &String, client : &Client) -> Result<String, Error>{
 
     let result = client
             .get_parameter()
@@ -125,4 +133,38 @@ pub async fn edit_ps_value(parameter_name: &str, edited_value: String, client : 
         .await?;
 
     Ok(())
+}
+
+pub async fn get_ps_metadata(parameter_name: &str, client : &Client) -> PsMetadata {
+
+    let mut result = PsMetadata::None;
+
+    let filter = ParameterStringFilter::builder()
+        .key("Name")
+        .values(parameter_name)
+        .build();
+
+    let filter= match filter {
+        Ok(filter_string) => filter_string,
+        _ => panic!("")
+    };
+    
+    let response = client
+    .describe_parameters()
+    .parameter_filters(filter)
+    .send()
+    .await
+    .unwrap();
+
+    if let Some(metadatas) = response.parameters {
+        for data in metadatas{
+            if let Some(name) = &data.name {
+                if name.to_string() == parameter_name.to_string() {
+                    result = PsMetadata::Data(data);
+                    break;
+                }
+            }
+        }
+    };
+    result
 }

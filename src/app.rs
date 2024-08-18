@@ -35,7 +35,7 @@ pub struct Args {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct StatefulList {
     pub state: ListState,
     pub items: Vec<String>,
@@ -257,32 +257,45 @@ impl App {
     }
 
     pub async fn launch_vim(&mut self) -> io::Result<()> {
-        let temp_file_path = &self.generate_random_file_name();
-
-        let mut file = File::create(temp_file_path)?;
-        file.write_all(self.get_selected_value().as_bytes())?;
-        drop(file);
-
-        Command::new("vim")
-            .arg(temp_file_path) // Specify the file you want to edit with Vim
-            .status()?;
-
-        let edited_value = fs::read_to_string(temp_file_path)?;
-
-        fs::remove_file(temp_file_path)?;
-
         let selected_ps_index = match self.parameter_stores.state.selected() {
             Some(metadata) => metadata,
             None => 0
         };
-    
-        let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
-        self.parameter_stores.ps_values.insert((ps_name).to_string(), (&edited_value).to_string());
+        let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
         match &self.ssm_client {
             SsmClient::Client(client) => {
-                let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value, client).await;
+                match aws::parameter_store::get_ps_value(ps_name, client).await {
+                    Ok(ps_value) => {
+                        let temp_file_path = &self.generate_random_file_name();
+        
+                        let mut file = File::create(temp_file_path)?;
+                        file.write_all(ps_value.as_bytes())?;
+                        drop(file);
+                
+                        Command::new("vim")
+                            .arg(temp_file_path) // Specify the file you want to edit with Vim
+                            .status()?;
+                
+                        let edited_value = fs::read_to_string(temp_file_path)?;
+                        let edited_value = edited_value.trim().to_string();
+                
+                        fs::remove_file(temp_file_path)?;
+                        
+                        if edited_value != ps_value.trim() {
+                            self.parameter_stores.ps_values.insert((ps_name).to_string(), (&edited_value).to_string());
+                            let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value, client).await;
+                            match aws::parameter_store::get_ps_metadata(ps_name, client).await {
+                                aws::parameter_store::PsMetadata::Data(data) => {
+                                    self.parameter_stores.ps_metadata.insert((ps_name).to_string(), data);
+                                }
+                                _ => {}
+                            }
+                        }
+                    },
+                    Err(_) => {}
+                }
             }
             _ => {}
         }
