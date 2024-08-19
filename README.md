@@ -7,11 +7,26 @@ This project serves as a learning exercise in [Rust](https://www.rust-lang.org/)
 ## Prerequisite
 1. [Install](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) AWS CLI.
 2. [Vim](https://github.com/vim/vim)
-3. Make sure you have [Rust and Cargo](https://www.rust-lang.org/tools/install) installed.
+3. Make sure you have [Rust and Cargo](https://www.rust-lang.org/tools/install) installed (Optional).
 
 **Note**: This project is not suitable for production use. It's designed strictly for educational purposes.
 
 ## Installation
+
+### From binaries (Linux, macOS, Windows)
+
+- Download the [latest release binary](https://github.com/sandeshgrangdan/ssm-tui/releases) for your system
+- Set the `PATH` environment variable
+
+### Install prebuilt binaries via shell script (Linux, macOS)
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.0/ssm-tui-installer.sh | sh
+```
+
+### Install prebuilt binaries via powershell script (Windows)
+```bash
+powershell -c "irm https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.0/ssm-tui-installer.ps1 | iex"
+```
 
 ### Cargo
 
@@ -31,11 +46,6 @@ cargo build --release
 cd target/release/
 ./ssm-tui
 ```
-
-### From binaries (Linux, macOS, Windows)
-
-- Download the [latest release binary](https://github.com/sandeshgrangdan/ssm-tui/releases) for your system
-- Set the `PATH` environment variable
 
 ## Usage
 
