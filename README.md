@@ -18,7 +18,7 @@ The binary executable is `spt`.
 ### Homebrew
 
 For both macOS and Linux
-
+ 
 ```bash
 brew install ssm-tui
 ```
@@ -89,7 +89,6 @@ First, install [Rust](https://www.rust-lang.org/tools/install) (using the recomm
 ```bash
 cargo install ssm-tui
 ```
-
 This method will build the binary from source.
 
 To update, run the same command again.
@@ -98,6 +97,30 @@ git clone git@github.com:sandeshgrangdan/ssm-tui.git
 cargo build --release
 cd target/release/
 ./ssm-tui
+```
+
+### From binaries (Linux, macOS, Windows)
+
+- Download the [latest release binary](https://github.com/sandeshgrangdan/ssm-tui/releases) for your system
+- Set the `PATH` environment variable
+
+## Usage
+
+```
+$ ssm-tui
+```
+
+```
+$ ssm-tui -h
+AWS Systems Manager - Parameter Store TUI Client
+
+Usage: ssm-tui [OPTIONS]
+
+Options:
+  -p, --profile <PROFILE>  Name of your AWS profile [default: None]
+  -r, --region <REGION>    AWS Region [default: None]
+  -h, --help               Print help
+  -V, --version            Print version
 ```
 
 ## Setup Instructions (Development)
