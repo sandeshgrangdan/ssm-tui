@@ -8,6 +8,7 @@ authors = ["Sandesh Grangdan<sandesht801@gmail.com>"]
 description = "A TUI for interacting with AWS SSM"
 repository = "https://github.com/sandeshgrangdan/ssm-tui"
 homepage = "https://github.com/sandeshgrangdan/ssm-tui"
+license = "MIT OR Apache-2.0"
 
 [package.metadata.wix]
 upgrade-guid = "9A0A9FB4-1F65-4836-BB44-0C5C053F5971"
