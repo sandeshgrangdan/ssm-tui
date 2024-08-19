@@ -23,9 +23,10 @@ aws-sdk-ssm = "1.42.0"
 chrono = "0.4.38"
 clap = { version = "4.5.16", features = ["derive"] }
 color-eyre = "0.6.2"
-crossterm = "0.27.0"
+crossterm = "0.28.1"
 rand = "0.8.5"
 ratatui = "0.25.0"
+time = "0.3.36"
 tokio = { version = "1.35.1", features = ["full"] }
 
 # The profile that 'cargo dist' will build with

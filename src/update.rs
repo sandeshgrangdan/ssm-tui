@@ -13,13 +13,13 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
                     app.quit()
                 }
             }
-            KeyCode::Right | KeyCode::Char('j') => app.increment_scrol(),
-            KeyCode::Left | KeyCode::Char('k') => app.decrement_scrol(),
-            KeyCode::Down => {
+            KeyCode::Right => app.increment_scrol(),
+            KeyCode::Left => app.decrement_scrol(),
+            KeyCode::Down | KeyCode::Char('j') => {
                 app.clear_scrol();
                 app.parameter_stores.next()
             },
-            KeyCode::Up => {
+            KeyCode::Up | KeyCode::Char('k') => {
                 app.clear_scrol();
                 app.parameter_stores.previous()
             },
