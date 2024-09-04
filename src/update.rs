@@ -7,7 +7,7 @@ use crate::app::ps_list_filter::user_input::InputMode;
 pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
     match app.ps_filter_data.input_mode {
         InputMode::Normal => match key_event.code {
-            KeyCode::Esc | KeyCode::Char('q') => app.quit(),
+            // KeyCode::Esc | KeyCode::Char('q') => app.quit(),
             KeyCode::Char('c') | KeyCode::Char('C') => {
                 if key_event.modifiers == KeyModifiers::CONTROL {
                     app.quit()
