@@ -21,6 +21,7 @@ use tui::Tui;
 use update::update;
 use crossterm::event::{self as my_event};
 // use tokio::task;
+// use tokio::sync::mpsc;
 // ANCHOR_END: imports_main
 
 // ANCHOR: main
@@ -31,8 +32,12 @@ async fn main() -> Result<()> {
     let mut app = App::new(app::Args::parse());
     app.set_ssm_client().await;
 
+    app.fetch_ps_data().await;
+
+    // let mut my_app = app.clone();
+
     // task::spawn(async move {
-        app.fetch_ps_data().await;
+    //     my_app.fetch_ps_data().await;
     // });
 
     // Initialize the terminal user interface.

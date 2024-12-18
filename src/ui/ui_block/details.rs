@@ -11,19 +11,18 @@ use ratatui::{
         Padding
     }
 };
-use crate::app::App;
-use crate::app::PsMetadata;
+use crate::app::{aws::parameter_store::SelectedPsMetadata, App};
 
 pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect){
     let mut ps_value : String = String::from("No data found.");
     let mut ps_name : &String = &String::from("No data found");
     
     match app.get_selected_ps_data(){
-        PsMetadata::Data(_, value,name ) => {
+        SelectedPsMetadata::Data(_, value,name ) => {
             ps_value = value;
             ps_name = name;
         }
-        PsMetadata::None => {}
+        SelectedPsMetadata::None => {}
     }
 
     let text = Text::from(format!("{}",ps_value));

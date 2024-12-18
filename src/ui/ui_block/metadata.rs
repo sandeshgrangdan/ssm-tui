@@ -17,8 +17,7 @@ use aws_sdk_ssm::types::{
 };
 use chrono::{DateTime, Utc};
 
-use crate::app::App;
-use crate::app::PsMetadata;
+use crate::app::{aws::parameter_store::SelectedPsMetadata, App};
 
 
 pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
@@ -32,7 +31,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
     let mut ps_name: &str = "No data found";
     
     match app.get_selected_ps_data() {
-        PsMetadata::Data(ps_metadata, _,name ) => {
+        SelectedPsMetadata::Data(ps_metadata, _,name ) => {
 
             ps_name = name;
 
@@ -81,7 +80,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect){
             formatted_date = datetime.format("%a, %d %b %Y %H:%M:%S GMT").to_string();
 
         }
-        PsMetadata::None => {}
+        SelectedPsMetadata::None => {}
     }
 
     let first_text_color = Style::default().fg(Color::Rgb(255, 126, 0));

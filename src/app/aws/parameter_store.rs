@@ -1,18 +1,40 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap, fs::{self, File}, io::{self, Write}, process::Command, sync::Arc
+};
 
-use aws_config::meta::region::RegionProviderChain;
-use aws_config::{BehaviorVersion, Region};
+use aws_config::{
+    profile::ProfileFileRegionProvider,
+    meta::region::RegionProviderChain,
+    {BehaviorVersion, Region}
+};
 use aws_sdk_ssm::{
     types::{
         ParameterMetadata,
         ParameterStringFilter
     }, Client, Error
 };
-use aws_config::profile::ProfileFileRegionProvider;
+
+use crate::app::App;
+use crate::app::aws;
+
+// ANCHOR: application
+#[derive(Debug, Clone)]
+pub enum SsmClient{
+    Client(Client),
+    None
+}
 
 #[derive(Debug)]
 pub enum PsMetadata {
     Data(ParameterMetadata),
+    None
+}
+
+// ANCHOR_END: application
+#[derive(Debug, Default)]
+pub enum SelectedPsMetadata<'a, 'b> {
+    Data(&'a ParameterMetadata, String, &'b String),
+    #[default]
     None
 }
 
@@ -167,4 +189,138 @@ pub async fn get_ps_metadata(parameter_name: &str, client : &Client) -> PsMetada
         }
     };
     result
+}
+
+impl App {
+    pub async fn set_ssm_client(&mut self){
+        self.ssm_client = SsmClient::Client(
+                aws::parameter_store::get_aws_client(
+                    self.args.profile.clone(), 
+                    self.args.region.clone()
+                ).await
+        )
+    }
+
+    pub async fn fetch_ps_data(&mut self){
+        match &self.ssm_client {
+            SsmClient::Client(client) => {
+                match aws::parameter_store::fetch_ps(&client).await {
+                    Ok((ps_metadata,ps_values,items)) => {
+                        self.parameter_stores.ps_values = ps_values;
+                        self.parameter_stores.ps_metadata = ps_metadata;
+                        self.parameter_stores.items = Arc::new(items.clone());
+                        self.parameter_stores.display_items = items;
+                    }
+                    Err(err) => println!("{:?}",err)
+                };
+            }
+            _ => {}
+        }
+    }
+
+    pub fn get_selected_ps_data(&self) -> SelectedPsMetadata{
+        let selected_ps_index = match self.parameter_stores.state.selected() {
+            Some(metadata) => metadata,
+            None => 0
+        };
+
+        if self.parameter_stores.display_items.len() > 0 {
+            let ps_name = &self.parameter_stores.display_items[selected_ps_index];
+
+            let metadata = match self.parameter_stores.ps_metadata.get(ps_name) {
+                Some(ps_metadata) => ps_metadata,
+                _ => panic!("")
+            };
+    
+            let value = match self.parameter_stores.ps_values.get(ps_name) {
+                Some(value) => value.to_string(),
+                None => "".to_string()
+            };
+
+            return SelectedPsMetadata::Data(metadata,value,ps_name)
+        }
+
+       SelectedPsMetadata::None
+
+    }
+
+    pub fn get_selected_value(&mut self) -> String {
+
+        let default_value = "".to_string();
+        let selected_ps_index = match self.parameter_stores.state.selected() {
+            Some(metadata) => metadata,
+            None => 0
+        };
+
+        if self.parameter_stores.display_items.len() > 0 {
+            let ps_name = &self.parameter_stores.display_items[selected_ps_index];
+
+            return match self.parameter_stores.ps_values.get(ps_name) {
+                Some(value) => value.to_string(),
+                None => default_value
+            }
+        }
+        default_value
+    }
+
+    pub async fn launch_vim(&mut self) -> io::Result<()> {
+        let selected_ps_index = match self.parameter_stores.state.selected() {
+            Some(metadata) => metadata,
+            None => 0
+        };
+
+        let ps_name = &self.parameter_stores.display_items[selected_ps_index];
+
+        match &self.ssm_client {
+            SsmClient::Client(client) => {
+                match aws::parameter_store::get_ps_value(ps_name, client).await {
+                    Ok(ps_value) => {
+                        let temp_file_path = &self.generate_random_file_name();
+        
+                        let mut file = File::create(temp_file_path)?;
+                        file.write_all(ps_value.as_bytes())?;
+                        drop(file);
+                
+                        Command::new("vim")
+                            .arg(temp_file_path) // Specify the file you want to edit with Vim
+                            .status()?;
+                
+                        let edited_value = fs::read_to_string(temp_file_path)?;
+                        let edited_value = edited_value.trim().to_string();
+                
+                        fs::remove_file(temp_file_path)?;
+                        
+                        if edited_value != ps_value.trim() {
+                            self.parameter_stores.ps_values.insert((ps_name).to_string(), (&edited_value).to_string());
+                            let _ = aws::parameter_store::edit_ps_value(ps_name, edited_value, client).await;
+                            match aws::parameter_store::get_ps_metadata(ps_name, client).await {
+                                aws::parameter_store::PsMetadata::Data(data) => {
+                                    self.parameter_stores.ps_metadata.insert((ps_name).to_string(), data);
+                                }
+                                _ => {}
+                            }
+                        }
+                    },
+                    Err(_) => {}
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    pub fn set_ps_list(&mut self) {
+        if self.ps_filter_data.input.is_empty() {
+            self.parameter_stores.list_title = "All".to_string();
+            self.parameter_stores.display_items = self.parameter_stores.items.to_vec();
+        }else{
+            self.parameter_stores.list_title = self.ps_filter_data.input.to_string();
+
+            self.parameter_stores.display_items = self.parameter_stores.items
+                .iter()
+                .filter(|name| name.trim().to_lowercase().contains(&self.ps_filter_data.input.trim().to_lowercase()))
+                .cloned()
+                .collect();
+        }
+    }
 }

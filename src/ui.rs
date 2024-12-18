@@ -4,6 +4,7 @@ use ratatui::{
 };
 
 mod ui_block;
+pub mod widgets;
 use crate::app::App;
 
 pub fn render(app: &mut App, f: &mut Frame) {
