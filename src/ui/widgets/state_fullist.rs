@@ -16,6 +16,12 @@ pub struct StatefulList {
     pub list_title: String,
 }
 
+impl Default for StatefulList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StatefulList {
     pub fn new() -> Self {
         Self {
@@ -30,7 +36,7 @@ impl StatefulList {
     }
 
     pub fn next(&mut self) {
-        if self.display_items.len() > 0 {
+        if !self.display_items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
                     if i >= self.display_items.len() - 1 {
@@ -47,7 +53,7 @@ impl StatefulList {
     }
 
     pub fn previous(&mut self) {
-        if self.display_items.len() > 0 {
+        if !self.display_items.is_empty() {
             let i = match self.state.selected() {
                 Some(i) => {
                     if i == 0 {

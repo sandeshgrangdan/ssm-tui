@@ -103,7 +103,7 @@ mod tests {
     fn toggle_search() {
         let mut app = App::new(Args::parse());
         app.toggle_search();
-        assert_eq!(app.filter_ps_list, true);
+        assert!(app.filter_ps_list);
     }
 
     #[test]

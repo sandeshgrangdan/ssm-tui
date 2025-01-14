@@ -50,10 +50,7 @@ async fn main() -> Result<()> {
         // Handle events.
 
         if let Ok(event) = my_event::read() {
-            match event {
-                my_event::Event::Key(key_event) => update(&mut app, key_event, &mut tui).await,
-                _ => {}
-            }
+            if let my_event::Event::Key(key_event) = event { update(&mut app, key_event, &mut tui).await }
         }
     }
     // Exit the user interface.

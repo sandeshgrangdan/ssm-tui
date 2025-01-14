@@ -18,7 +18,7 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect) {
         SelectedPsMetadata::None => {}
     }
 
-    let text = Text::from(format!("{}", ps_value));
+    let text = Text::from(ps_value.to_string());
 
     let paragraph = Paragraph::new(text)
         .block(

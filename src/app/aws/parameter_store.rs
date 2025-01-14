@@ -52,10 +52,10 @@ pub struct ParameterStoreMetadata {
 
 pub async fn get_aws_client(profile: String, region: String) -> Client {
     let default_region = "us-east-1";
-    if profile == String::from("None") {
+    if profile == *"None" {
         Client::new(
             &aws_config::defaults(BehaviorVersion::latest())
-                .region(if region != String::from("None") {
+                .region(if region != *"None" {
                     RegionProviderChain::first_try(Region::new(region))
                         .or_default_provider()
                         .or_else(Region::new(default_region))
@@ -68,7 +68,7 @@ pub async fn get_aws_client(profile: String, region: String) -> Client {
     } else {
         Client::new(
             &aws_config::defaults(BehaviorVersion::latest())
-                .region(if region == String::from("None") {
+                .region(if region == *"None" {
                     RegionProviderChain::first_try(
                         ProfileFileRegionProvider::builder()
                             .profile_name(profile.clone())
@@ -238,7 +238,7 @@ pub async fn get_ps_metadata(parameter_name: &str, client: &Client) -> PsMetadat
     if let Some(metadatas) = response.parameters {
         for data in metadatas {
             if let Some(name) = &data.name {
-                if name.to_string() == parameter_name.to_string() {
+                if *name == *parameter_name {
                     result = PsMetadata::Data(data);
                     break;
                 }
@@ -260,29 +260,23 @@ impl App {
     }
 
     pub async fn fetch_ps_data(&mut self) {
-        match &self.ssm_client {
-            SsmClient::Client(client) => {
-                match aws::parameter_store::fetch_ps(&client).await {
-                    Ok((ps_metadata, ps_values, items)) => {
-                        self.parameter_stores.ps_values = ps_values;
-                        self.parameter_stores.ps_metadata = ps_metadata;
-                        self.parameter_stores.items = Arc::new(items.clone());
-                        self.parameter_stores.display_items = items;
-                    }
-                    Err(err) => println!("{:?}", err),
-                };
-            }
-            _ => {}
+        if let SsmClient::Client(client) = &self.ssm_client {
+            match aws::parameter_store::fetch_ps(client).await {
+                Ok((ps_metadata, ps_values, items)) => {
+                    self.parameter_stores.ps_values = ps_values;
+                    self.parameter_stores.ps_metadata = ps_metadata;
+                    self.parameter_stores.items = Arc::new(items.clone());
+                    self.parameter_stores.display_items = items;
+                }
+                Err(err) => println!("{:?}", err),
+            };
         }
     }
 
     pub fn get_selected_ps_data(&self) -> SelectedPsMetadata {
-        let selected_ps_index = match self.parameter_stores.state.selected() {
-            Some(metadata) => metadata,
-            None => 0,
-        };
+        let selected_ps_index = self.parameter_stores.state.selected().unwrap_or_default();
 
-        if self.parameter_stores.display_items.len() > 0 {
+        if !self.parameter_stores.display_items.is_empty() {
             let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
             let metadata = self
@@ -318,12 +312,9 @@ impl App {
 
     pub fn get_selected_value(&mut self) -> String {
         let default_value = "".to_string();
-        let selected_ps_index = match self.parameter_stores.state.selected() {
-            Some(metadata) => metadata,
-            None => 0,
-        };
+        let selected_ps_index = self.parameter_stores.state.selected().unwrap_or_default();
 
-        if self.parameter_stores.display_items.len() > 0 {
+        if !self.parameter_stores.display_items.is_empty() {
             let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
             let value = self
@@ -344,63 +335,51 @@ impl App {
     }
 
     pub async fn launch_vim(&mut self) -> io::Result<()> {
-        let selected_ps_index = match self.parameter_stores.state.selected() {
-            Some(metadata) => metadata,
-            None => 0,
-        };
+        let selected_ps_index = self.parameter_stores.state.selected().unwrap_or_default();
 
         let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
-        match &self.ssm_client {
-            SsmClient::Client(client) => {
-                match aws::parameter_store::get_ps_value(ps_name, client).await {
-                    Ok(ps_value) => {
-                        let temp_file_path = &self.generate_random_file_name();
+        if let SsmClient::Client(client) = &self.ssm_client {
+            if let Ok(ps_value) = aws::parameter_store::get_ps_value(ps_name, client).await {
+                let temp_file_path = &self.generate_random_file_name();
 
-                        let mut file = File::create(temp_file_path)?;
-                        file.write_all(ps_value.as_bytes())?;
-                        drop(file);
+                let mut file = File::create(temp_file_path)?;
+                file.write_all(ps_value.as_bytes())?;
+                drop(file);
 
-                        Command::new("vim")
-                            .arg(temp_file_path) // Specify the file you want to edit with Vim
-                            .status()?;
+                Command::new("vim")
+                    .arg(temp_file_path) // Specify the file you want to edit with Vim
+                    .status()?;
 
-                        let edited_value = fs::read_to_string(temp_file_path)?;
-                        let edited_value = edited_value.trim().to_string();
+                let edited_value = fs::read_to_string(temp_file_path)?;
+                let edited_value = edited_value.trim().to_string();
 
-                        fs::remove_file(temp_file_path)?;
+                fs::remove_file(temp_file_path)?;
 
-                        if edited_value != ps_value.trim() {
-                            if let Some(param) = self
-                                .parameter_stores
-                                .ps_values
-                                .iter_mut()
-                                .find(|param| param.name.as_deref() == Some(ps_name))
-                            {
-                                param.value = Some((&edited_value).to_string());
-                            }
+                if edited_value != ps_value.trim() {
+                    if let Some(param) = self
+                        .parameter_stores
+                        .ps_values
+                        .iter_mut()
+                        .find(|param| param.name.as_deref() == Some(ps_name))
+                    {
+                        param.value = Some(edited_value.to_string());
+                    }
 
-                            let _ =
-                                aws::parameter_store::edit_ps_value(ps_name, edited_value, client)
-                                    .await;
-                            match aws::parameter_store::get_ps_metadata(ps_name, client).await {
-                                aws::parameter_store::PsMetadata::Data(data) => {
-                                    if let Some(index) =
-                                        self.parameter_stores.ps_metadata.iter().position(|param| {
-                                            param.name.as_deref() == Some(ps_name)
-                                        })
-                                    {
-                                        self.parameter_stores.ps_metadata[index] = data;
-                                    }
-                                }
-                                _ => {}
-                            }
+                    let _ =
+                        aws::parameter_store::edit_ps_value(ps_name, edited_value, client)
+                            .await;
+                    if let aws::parameter_store::PsMetadata::Data(data) = aws::parameter_store::get_ps_metadata(ps_name, client).await {
+                        if let Some(index) =
+                            self.parameter_stores.ps_metadata.iter().position(|param| {
+                                param.name.as_deref() == Some(ps_name)
+                            })
+                        {
+                            self.parameter_stores.ps_metadata[index] = data;
                         }
                     }
-                    Err(_) => {}
                 }
             }
-            _ => {}
         }
         Ok(())
     }

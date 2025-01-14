@@ -18,6 +18,12 @@ pub struct PsListFilterInput {
     pub default_messages: String,
 }
 
+impl Default for PsListFilterInput {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PsListFilterInput {
     pub fn new() -> Self {
         Self {
