@@ -1,8 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
-use ratatui::widgets::ListState;
 use aws_sdk_ssm::types::ParameterMetadata;
+use ratatui::widgets::ListState;
 
+use crate::app::aws::parameter_store::ParameterStoreMetadata;
 
 #[derive(Debug, Clone)]
 pub struct StatefulList {
@@ -10,26 +11,25 @@ pub struct StatefulList {
     pub items: Arc<Vec<String>>,
     pub display_items: Vec<String>,
     pub last_selected: Option<usize>,
-    pub ps_metadata: HashMap<String, ParameterMetadata>,
-    pub ps_values : HashMap<String, String>,
-    pub list_title: String
+    pub ps_metadata: Vec<ParameterMetadata>,
+    pub ps_values: Vec<ParameterStoreMetadata>,
+    pub list_title: String,
 }
 
 impl StatefulList {
-    pub fn new() -> Self{
-        Self { 
-            state: ListState::default(), 
+    pub fn new() -> Self {
+        Self {
+            state: ListState::default(),
             items: Arc::new(vec![]),
             display_items: vec![],
             last_selected: None,
-            ps_metadata: HashMap::new(),
-            ps_values: HashMap::new(),
-            list_title: String::from("All")
+            ps_metadata: vec![],
+            ps_values: vec![],
+            list_title: String::from("All"),
         }
     }
 
     pub fn next(&mut self) {
-
         if self.display_items.len() > 0 {
             let i = match self.state.selected() {
                 Some(i) => {
@@ -41,7 +41,7 @@ impl StatefulList {
                 }
                 None => self.last_selected.unwrap_or(0),
             };
-    
+
             self.state.select(Some(i));
         }
     }

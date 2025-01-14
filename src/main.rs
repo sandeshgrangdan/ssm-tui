@@ -4,10 +4,10 @@
 pub mod app;
 /// Terminal events handler.
 pub mod event;
-/// Widget renderer.
-pub mod ui;
 /// Terminal user interface.
 pub mod tui;
+/// Widget renderer.
+pub mod ui;
 pub mod update;
 
 /// Application updater.
@@ -16,10 +16,10 @@ use app::App;
 use clap::Parser;
 use color_eyre::Result;
 // use event::{Event, EventHandler};
+use crossterm::event::{self as my_event};
 use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
-use crossterm::event::{self as my_event};
 // use tokio::task;
 // use tokio::sync::mpsc;
 // ANCHOR_END: imports_main
@@ -27,18 +27,11 @@ use crossterm::event::{self as my_event};
 // ANCHOR: main
 #[tokio::main]
 async fn main() -> Result<()> {
-
     // Create an application.
     let mut app = App::new(app::Args::parse());
     app.set_ssm_client().await;
 
     app.fetch_ps_data().await;
-
-    // let mut my_app = app.clone();
-
-    // task::spawn(async move {
-    //     my_app.fetch_ps_data().await;
-    // });
 
     // Initialize the terminal user interface.
     let backend = CrosstermBackend::new(std::io::stderr());
@@ -62,15 +55,6 @@ async fn main() -> Result<()> {
                 _ => {}
             }
         }
-        // Not working for VIM editor.
-        // if !app.is_vim_open {
-        //     match events.next()? {
-        //         Event::Tick => {}
-        //         Event::Key(key_event) => update(&mut app, key_event, &mut tui),
-        //         Event::Mouse(_) => {}
-        //         Event::Resize(_, _) => {}
-        //     };
-        // }
     }
     // Exit the user interface.
     tui.exit()?;

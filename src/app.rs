@@ -1,19 +1,16 @@
-use rand::Rng;
 use clap::Parser;
+use rand::Rng;
 
 use crate::ui::widgets::state_fullist::StatefulList;
 use aws::parameter_store::SsmClient;
 use ps_list_filter::user_input::{
+    InputMode::{Editing, Normal},
     PsListFilterInput,
-    InputMode::{
-        Normal,
-        Editing
-    }
 };
 
 // Public mod
-pub mod ps_list_filter;
 pub mod aws;
+pub mod ps_list_filter;
 
 // ANCHOR_END: action
 /// AWS Systems Manager - Parameter Store TUI Client
@@ -37,12 +34,11 @@ pub struct App {
     /// counter
     pub parameter_stores: StatefulList,
     pub scroll: u16,
-    pub filter_ps_list : bool,
+    pub filter_ps_list: bool,
     pub ps_filter_data: PsListFilterInput,
     ssm_client: SsmClient,
-    pub args: Args
+    pub args: Args,
 }
-
 
 // ANCHOR: application_impl
 impl App {
@@ -52,11 +48,10 @@ impl App {
             parameter_stores: StatefulList::new(),
             should_quit: false,
             scroll: 0,
-            filter_ps_list : false,
-            ps_filter_data : PsListFilterInput::new(),
+            filter_ps_list: false,
+            ps_filter_data: PsListFilterInput::new(),
             ssm_client: SsmClient::None,
-            args
-            // ssm_client: aws::parameter_store::get_aws_client(args.profile, args.region).await
+            args, // ssm_client: aws::parameter_store::get_aws_client(args.profile, args.region).await
         }
     }
 
@@ -65,26 +60,26 @@ impl App {
         self.should_quit = true;
     }
 
-    pub fn increment_scrol(&mut self){
+    pub fn increment_scrol(&mut self) {
         self.scroll += 1;
     }
 
-    pub fn decrement_scrol(&mut self){
+    pub fn decrement_scrol(&mut self) {
         if self.scroll == 0 {
             self.scroll = 0;
-        }else{
+        } else {
             self.scroll -= 1;
         }
     }
 
-    pub fn clear_scrol(&mut self){
+    pub fn clear_scrol(&mut self) {
         self.scroll = 0;
     }
 
-    pub fn toggle_search(&mut self){
-        if self.filter_ps_list{
+    pub fn toggle_search(&mut self) {
+        if self.filter_ps_list {
             self.ps_filter_data.input_mode = Normal;
-        }else {
+        } else {
             self.ps_filter_data.input_mode = Editing;
         }
         self.filter_ps_list = !self.filter_ps_list
