@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum InputMode {
     #[default]
     Normal,
@@ -6,7 +6,7 @@ pub enum InputMode {
 }
 
 /// App holds the state of the application
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PsListFilterInput {
     /// Current value of the input box
     pub input: String,
@@ -16,6 +16,12 @@ pub struct PsListFilterInput {
     pub input_mode: InputMode,
     /// History of recorded messages
     pub default_messages: String,
+}
+
+impl Default for PsListFilterInput {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PsListFilterInput {

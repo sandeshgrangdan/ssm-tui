@@ -1,53 +1,33 @@
-use ratatui::{
-    layout::Layout, 
-    prelude::*, 
-};
+use ratatui::{layout::Layout, prelude::*};
 
 mod ui_block;
+pub mod widgets;
 use crate::app::App;
 
 pub fn render(app: &mut App, f: &mut Frame) {
     let main_layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(9),
-            Constraint::Percentage(100),
-        ])
+        .constraints(vec![Constraint::Length(9), Constraint::Percentage(100)])
         .split(f.size());
 
     let top_layout = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(vec![
-            Constraint::Percentage(60),
-            Constraint::Min(40),
-        ])
+        .constraints(vec![Constraint::Percentage(60), Constraint::Min(40)])
         .split(main_layout[0]);
-    
+
     let main_app_layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            if app.filter_ps_list {
-                 vec![
-                    Constraint::Min(20),
-                    Constraint::Length(3),
-                ]
-            }else {
-                vec![
-                    Constraint::Min(20)
-                ]
-            }
-        )
+        .constraints(if app.filter_ps_list {
+            vec![Constraint::Min(20), Constraint::Length(3)]
+        } else {
+            vec![Constraint::Min(20)]
+        })
         .split(main_layout[1]);
-
 
     let layout: std::rc::Rc<[Rect]> = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(vec![
-            Constraint::Percentage(30),
-            Constraint::Percentage(70),
-        ])
+        .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
         .split(main_app_layout[0]);
-
 
     ui_block::metadata::render_metadata(app, f, top_layout[0]);
     ui_block::user_info::render_user_info(app, f, top_layout[1]);
@@ -57,5 +37,4 @@ pub fn render(app: &mut App, f: &mut Frame) {
     if app.filter_ps_list {
         ui_block::search::render_search(app, f, main_app_layout[1]);
     }
-    
 }

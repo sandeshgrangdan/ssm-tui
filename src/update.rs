@@ -1,10 +1,10 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers,KeyEventKind};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
+use crate::app::ps_list_filter::user_input::InputMode;
 use crate::app::App;
 use crate::tui::Tui;
-use crate::app::ps_list_filter::user_input::InputMode;
 
-pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
+pub async fn update(app: &mut App, key_event: KeyEvent, tui: &mut Tui) {
     match app.ps_filter_data.input_mode {
         InputMode::Normal => match key_event.code {
             // KeyCode::Esc | KeyCode::Char('q') => app.quit(),
@@ -18,23 +18,23 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
             KeyCode::Down | KeyCode::Char('j') => {
                 app.clear_scrol();
                 app.parameter_stores.next()
-            },
+            }
             KeyCode::Up | KeyCode::Char('k') => {
                 app.clear_scrol();
                 app.parameter_stores.previous()
-            },
-            KeyCode::Char('/')  => {
+            }
+            KeyCode::Char('/') => {
                 app.toggle_search();
-            },
+            }
             KeyCode::Char('e') | KeyCode::Enter => {
-                    let _ = tui.init_vim();
+                let _ = tui.init_vim();
 
-                    if let Err(e) = app.launch_vim().await {
-                        eprintln!("Error launching Vim: {}", e);
-                    }
+                if let Err(e) = app.launch_vim().await {
+                    eprintln!("Error launching Vim: {}", e);
+                }
 
-                    let _ = tui.exit_vim();
-            },
+                let _ = tui.exit_vim();
+            }
             _ => {}
         },
         InputMode::Editing if key_event.kind == KeyEventKind::Press => match key_event.code {
@@ -58,11 +58,11 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui : &mut Tui) {
             KeyCode::Down => {
                 app.clear_scrol();
                 app.parameter_stores.next()
-            },
+            }
             KeyCode::Up => {
                 app.clear_scrol();
                 app.parameter_stores.previous()
-            },
+            }
             KeyCode::Esc => {
                 app.toggle_search();
             }
