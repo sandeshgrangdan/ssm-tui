@@ -17,7 +17,6 @@ use clap::Parser;
 use color_eyre::Result;
 // use event::{Event, EventHandler};
 use crossterm::event::{self as my_event};
-use ratatui::{backend::CrosstermBackend, Terminal};
 use tui::Tui;
 use update::update;
 // use tokio::task;
@@ -34,12 +33,10 @@ async fn main() -> Result<()> {
     app.fetch_ps_data().await;
 
     // Initialize the terminal user interface.
-    let backend = CrosstermBackend::new(std::io::stderr());
-    let terminal = Terminal::new(backend)?;
+    let terminal = ratatui::init();
 
     // let events = EventHandler::new(10);
     let mut tui = Tui::new(terminal);
-    tui.enter()?;
 
     // Start the main loop.
     while !&app.should_quit {
@@ -50,11 +47,15 @@ async fn main() -> Result<()> {
         // Handle events.
 
         if let Ok(event) = my_event::read() {
-            if let my_event::Event::Key(key_event) = event { update(&mut app, key_event, &mut tui).await }
+            if let my_event::Event::Key(key_event) = event {
+                update(&mut app, key_event, &mut tui).await
+            }
         }
     }
+
     // Exit the user interface.
-    tui.exit()?;
+    ratatui::restore();
+    // tui.exit()?;
     Ok(())
 }
 // ANCHOR_END: main

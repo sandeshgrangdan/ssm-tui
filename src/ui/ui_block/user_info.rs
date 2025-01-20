@@ -7,37 +7,37 @@ use ratatui::{
 
 pub fn render_user_info(app: &mut App, f: &mut Frame, layout: Rect) {
     let text = vec![
-        "Use `Esc`, `Ctrl-C` or `q` to stop running.".into(),
-        "Use `▲ ▼` to select list.".into(),
-        "Use `◄ ►` to scrol value.".into(),
+        "Use `Ctrl-C` to stop running.".into(),
+        "Use `▲ ▼` to scroll.".into(),
+        "Use `◄ ►` to move.".into(),
         Line::from(vec![Span::styled(
             "Use `/` to filter list.",
-            Style::default().fg(Color::Rgb(196, 16, 78)),
+            Style::default().fg(Color::LightRed),
         )]),
         Line::from(vec![Span::styled(
             "Use `e` or `Enter` to edit parameter store.",
-            Style::default().fg(Color::Rgb(255, 51, 221)),
+            Style::default().fg(Color::Magenta),
         )]),
         Line::from(vec![
-            Span::styled("Profile: ", Style::default().fg(Color::Rgb(22, 38, 250))),
-            app.args.profile.clone().gray().bold(),
-            Span::styled(" Region: ", Style::default().fg(Color::Rgb(22, 38, 250))),
-            app.args.region.clone().gray().bold(),
+            Span::styled("Profile: ", Style::default().fg(Color::LightYellow)),
+            app.args.profile.clone().light_green().bold(),
+            Span::styled(" Region: ", Style::default().fg(Color::LightYellow)),
+            app.args.region.clone().light_green().bold(),
         ]),
     ];
 
     f.render_widget(
         Paragraph::new(text)
-            .wrap(Wrap { trim: true })
+            // .wrap(Wrap { trim: true })
             .block(
                 Block::default()
                     // .title("User Info")
-                    // .title_alignment(Alignment::Center)
+                    .title_alignment(Alignment::Center)
                     .borders(Borders::RIGHT)
                     .border_type(BorderType::QuadrantInside)
                     .padding(Padding::new(1, 1, 1, 1)),
             )
-            .style(Style::default().fg(Color::Rgb(6, 105, 65)))
+            .style(Style::default().fg(Color::LightBlue))
             .alignment(Alignment::Left),
         layout,
     );

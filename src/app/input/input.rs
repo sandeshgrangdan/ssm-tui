@@ -7,28 +7,26 @@ pub enum InputMode {
 
 /// App holds the state of the application
 #[derive(Debug, Clone)]
-pub struct PsListFilterInput {
+pub struct UserInput {
     /// Current value of the input box
     pub input: String,
     /// Position of cursor in the editor area.
     pub character_index: usize,
     /// Current input mode
-    pub input_mode: InputMode,
     /// History of recorded messages
     pub default_messages: String,
 }
 
-impl Default for PsListFilterInput {
+impl Default for UserInput {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl PsListFilterInput {
+impl UserInput {
     pub fn new() -> Self {
         Self {
             input: String::new(),
-            input_mode: InputMode::Normal,
             default_messages: String::from("all"),
             character_index: 0,
         }

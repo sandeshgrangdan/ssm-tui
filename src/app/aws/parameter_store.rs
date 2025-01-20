@@ -1,4 +1,5 @@
 use std::{
+    env,
     fs::{self, File},
     io::{self, Write},
     process::Command,
@@ -12,12 +13,13 @@ use aws_config::{
 };
 use aws_sdk_ssm::{
     primitives::DateTime,
-    types::{ParameterMetadata, ParameterStringFilter, ParameterType},
+    types::{ParameterMetadata, ParameterStringFilter, ParameterTier, ParameterType},
     Client, Error,
 };
+use ratatui::text::Line;
 
-use crate::app::aws;
 use crate::app::App;
+use crate::app::{aws, input::input::InputMode};
 
 // ANCHOR: application
 #[derive(Debug, Clone)]
@@ -35,10 +37,12 @@ pub enum PsMetadata {
 // ANCHOR_END: application
 #[derive(Debug, Default)]
 pub enum SelectedPsMetadata<'a, 'b> {
-    Data(&'a ParameterMetadata, String, &'b String),
+    Data(&'a ParameterMetadata, Vec<Line<'b>>, &'b String),
     #[default]
     None,
 }
+
+pub struct PsType {}
 
 #[derive(Debug, Clone)]
 pub struct ParameterStoreMetadata {
@@ -98,8 +102,6 @@ pub async fn fetch_ps(
     ),
     Error,
 > {
-    println!("🔄 Fetching data from the server...");
-
     let mut parameters_data: Vec<ParameterMetadata> = vec![];
 
     let mut next_token: Option<String> = None;
@@ -124,8 +126,6 @@ pub async fn fetch_ps(
 
     let mut items: Vec<String> = vec![];
 
-    println!("📡 Connecting to the server for {} data pieces, our hamster is running as fast as it can! 🐹",parameters_data.len());
-    println!("💨 Please wait...");
     let mut fn_output: Vec<ParameterStoreMetadata> = vec![];
 
     let mut handles: Vec<tokio::task::JoinHandle<Vec<ParameterStoreMetadata>>> = Vec::new();
@@ -199,9 +199,11 @@ pub async fn get_ps_value(name: &String, client: &Client) -> Result<String, Erro
     Ok(result)
 }
 
-pub async fn edit_ps_value(
+pub async fn put_parameter(
     parameter_name: &str,
     edited_value: String,
+    ps_type: ParameterType,
+    ps_tier: ParameterTier,
     client: &Client,
 ) -> Result<(), Error> {
     client
@@ -209,6 +211,8 @@ pub async fn edit_ps_value(
         .name(parameter_name)
         .value(edited_value)
         .overwrite(true)
+        .r#type(ps_type)
+        .tier(ps_tier)
         .send()
         .await?;
 
@@ -273,7 +277,7 @@ impl App {
         }
     }
 
-    pub fn get_selected_ps_data(&self) -> SelectedPsMetadata {
+    pub fn get_selected_ps_data(&mut self) -> SelectedPsMetadata {
         let selected_ps_index = self.parameter_stores.state.selected().unwrap_or_default();
 
         if !self.parameter_stores.display_items.is_empty() {
@@ -304,7 +308,11 @@ impl App {
                 None => "",
             };
 
-            return SelectedPsMetadata::Data(metadata, value.to_owned(), ps_name);
+            let lines: Vec<Line> = value.lines().map(Line::from).collect();
+
+            self.vertical_scroll_state = self.vertical_scroll_state.content_length(lines.len());
+
+            return SelectedPsMetadata::Data(metadata, lines, ps_name);
         }
 
         SelectedPsMetadata::None
@@ -337,6 +345,10 @@ impl App {
     pub async fn launch_vim(&mut self) -> io::Result<()> {
         let selected_ps_index = self.parameter_stores.state.selected().unwrap_or_default();
 
+        if self.parameter_stores.display_items.len() as u16 == 0 {
+            return Ok(());
+        }
+
         let ps_name = &self.parameter_stores.display_items[selected_ps_index];
 
         if let SsmClient::Client(client) = &self.ssm_client {
@@ -347,7 +359,9 @@ impl App {
                 file.write_all(ps_value.as_bytes())?;
                 drop(file);
 
-                Command::new("vim")
+                let editor = env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
+
+                Command::new(editor)
                     .arg(temp_file_path) // Specify the file you want to edit with Vim
                     .status()?;
 
@@ -364,18 +378,34 @@ impl App {
                         .find(|param| param.name.as_deref() == Some(ps_name))
                     {
                         param.value = Some(edited_value.to_string());
-                    }
 
-                    let _ =
-                        aws::parameter_store::edit_ps_value(ps_name, edited_value, client)
-                            .await;
-                    if let aws::parameter_store::PsMetadata::Data(data) = aws::parameter_store::get_ps_metadata(ps_name, client).await {
-                        if let Some(index) =
-                            self.parameter_stores.ps_metadata.iter().position(|param| {
-                                param.name.as_deref() == Some(ps_name)
-                            })
-                        {
-                            self.parameter_stores.ps_metadata[index] = data;
+                        if let Some(ps_type) = &param.store_type {
+                            if let Some(index) = self
+                                .parameter_stores
+                                .ps_metadata
+                                .iter()
+                                .position(|param| param.name.as_deref() == Some(ps_name))
+                            {
+                                if let Some(ps_tier) =
+                                    &self.parameter_stores.ps_metadata[index].tier
+                                {
+                                    aws::parameter_store::put_parameter(
+                                        ps_name,
+                                        edited_value,
+                                        ps_type.clone(),
+                                        ps_tier.clone(),
+                                        client,
+                                    )
+                                    .await
+                                    .unwrap();
+
+                                    if let aws::parameter_store::PsMetadata::Data(data) =
+                                        aws::parameter_store::get_ps_metadata(ps_name, client).await
+                                    {
+                                        self.parameter_stores.ps_metadata[index] = data;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -385,11 +415,11 @@ impl App {
     }
 
     pub fn set_ps_list(&mut self) {
-        if self.ps_filter_data.input.is_empty() {
+        if self.search.1.input.is_empty() {
             self.parameter_stores.list_title = "All".to_string();
             self.parameter_stores.display_items = self.parameter_stores.items.to_vec();
         } else {
-            self.parameter_stores.list_title = self.ps_filter_data.input.to_string();
+            self.parameter_stores.list_title = self.search.1.input.to_string();
 
             self.parameter_stores.display_items = self
                 .parameter_stores
@@ -398,10 +428,52 @@ impl App {
                 .filter(|name| {
                     name.trim()
                         .to_lowercase()
-                        .contains(&self.ps_filter_data.input.trim().to_lowercase())
+                        .contains(&self.search.1.input.trim().to_lowercase())
                 })
                 .cloned()
                 .collect();
+        }
+    }
+
+    pub async fn add(&mut self) {
+        if let SsmClient::Client(client) = &self.ssm_client {
+            aws::parameter_store::put_parameter(
+                &self.add_ps.1.input,
+                String::from("{}"),
+                self.ps_type.clone(),
+                self.ps_tier.clone(),
+                client,
+            )
+            .await
+            .unwrap();
+
+            self.fetch_ps_data().await;
+
+            if let Some(index) = self
+                .parameter_stores
+                .ps_metadata
+                .iter()
+                .position(|param| param.name.as_deref() == Some(&self.add_ps.1.input))
+            {
+                self.parameter_stores.state.select(Some(index));
+                self.add_ps.0 = false;
+                self.add_ps_desc.0 = false;
+                self.add_ps.1.input = String::new();
+                self.add_ps_desc.1.input = String::new();
+                self.input_mode = InputMode::Normal;
+            }
+        }
+    }
+
+    pub async fn delete_ps(&mut self, ps_name: &String) {
+        if let SsmClient::Client(client) = &self.ssm_client {
+            client
+                .delete_parameter()
+                .name(self.delete_ps.1.input.clone())
+                .send()
+                .await
+                .unwrap();
+            self.fetch_ps_data().await;
         }
     }
 }

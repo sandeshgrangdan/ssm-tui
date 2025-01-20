@@ -1,16 +1,24 @@
+use aws::parameter_store::SsmClient;
+use aws_sdk_ssm::types::{ParameterTier, ParameterType};
 use clap::Parser;
 use rand::Rng;
 
 use crate::ui::widgets::state_fullist::StatefulList;
-use aws::parameter_store::SsmClient;
-use ps_list_filter::user_input::{
-    InputMode::{Editing, Normal},
-    PsListFilterInput,
+use input::input::{
+    InputMode::{self, Editing, Normal},
+    UserInput,
 };
+use ratatui::widgets::ScrollbarState;
 
 // Public mod
 pub mod aws;
-pub mod ps_list_filter;
+pub mod input;
+
+#[derive(Parser, Debug, Clone)]
+pub enum SelectedTab {
+    List,
+    Details,
+}
 
 // ANCHOR_END: action
 /// AWS Systems Manager - Parameter Store TUI Client
@@ -29,15 +37,25 @@ pub struct Args {
 /// Application.
 #[derive(Debug, Clone)]
 pub struct App {
+    pub selected_tab: SelectedTab,
+    pub vertical_scroll: usize,
+    pub vertical_scroll_state: ScrollbarState,
     /// should the application exit?
     pub should_quit: bool,
     /// counter
     pub parameter_stores: StatefulList,
     pub scroll: u16,
     pub filter_ps_list: bool,
-    pub ps_filter_data: PsListFilterInput,
+    pub search: (bool, UserInput),
+    pub add_ps: (bool, UserInput),
+    pub add_ps_desc: (bool, UserInput),
+    pub delete_ps: (bool, UserInput),
+    pub ps_tier: ParameterTier,
+    pub ps_type: ParameterType,
     ssm_client: SsmClient,
     pub args: Args,
+    pub show_help: bool,
+    pub input_mode: InputMode,
 }
 
 // ANCHOR: application_impl
@@ -45,13 +63,23 @@ impl App {
     /// Constructs a new instance of [`App`].
     pub fn new(args: Args) -> Self {
         Self {
+            selected_tab: SelectedTab::List,
+            vertical_scroll: 0,
+            vertical_scroll_state: ScrollbarState::default(),
             parameter_stores: StatefulList::new(),
             should_quit: false,
             scroll: 0,
             filter_ps_list: false,
-            ps_filter_data: PsListFilterInput::new(),
+            search: (false, UserInput::new()),
+            add_ps: (false, UserInput::new()),
+            add_ps_desc: (false, UserInput::new()),
+            delete_ps: (false, UserInput::new()),
+            ps_tier: ParameterTier::Standard,
+            ps_type: ParameterType::String,
+            input_mode: InputMode::Normal,
             ssm_client: SsmClient::None,
-            args, // ssm_client: aws::parameter_store::get_aws_client(args.profile, args.region).await
+            args,
+            show_help: false, // ssm_client: aws::parameter_store::get_aws_client(args.profile, args.region).await
         }
     }
 
@@ -77,12 +105,12 @@ impl App {
     }
 
     pub fn toggle_search(&mut self) {
-        if self.filter_ps_list {
-            self.ps_filter_data.input_mode = Normal;
+        if self.search.0 {
+            self.input_mode = Normal;
         } else {
-            self.ps_filter_data.input_mode = Editing;
+            self.input_mode = Editing;
         }
-        self.filter_ps_list = !self.filter_ps_list
+        self.search.0 = !self.search.0
     }
 
     fn generate_random_file_name(&self) -> String {

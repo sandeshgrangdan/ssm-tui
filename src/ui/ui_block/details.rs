@@ -1,24 +1,35 @@
-use crate::app::{aws::parameter_store::SelectedPsMetadata, App};
+use crate::app::{aws::parameter_store::SelectedPsMetadata, App, SelectedTab};
 use ratatui::{
     prelude::*,
     style::{Color, Style},
     text::Text,
-    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap},
+    widgets::{
+        Block, BorderType, Borders, Padding, Paragraph, Scrollbar, ScrollbarOrientation, Wrap,
+    },
 };
 
 pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect) {
-    let mut ps_value: String = String::from("No data found.");
+    let mut lines = vec![];
     let mut ps_name: &String = &String::from("No data found");
 
+    let border_style = match app.selected_tab {
+        SelectedTab::Details => Style::default().fg(Color::LightRed),
+        _ => Style::default().fg(Color::Gray),
+    };
+
+    let scroll = app.vertical_scroll;
+    let mut version: i64 = 1;
+
     match app.get_selected_ps_data() {
-        SelectedPsMetadata::Data(_, value, name) => {
-            ps_value = value;
+        SelectedPsMetadata::Data(metadata, value, name) => {
+            lines = value;
             ps_name = name;
+            version = metadata.version;
         }
         SelectedPsMetadata::None => {}
     }
 
-    let text = Text::from(ps_value.to_string());
+    let text = Text::from(lines);
 
     let paragraph = Paragraph::new(text)
         .block(
@@ -27,21 +38,31 @@ pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect) {
                 .borders(Borders::ALL),
         )
         .style(Style::default().fg(Color::White))
-        .wrap(Wrap { trim: true })
-        .scroll((app.scroll, 0));
+        // .wrap(Wrap { trim: false })
+        .scroll((scroll as u16, 0));
 
     f.render_widget(
         paragraph
             .block(
                 Block::default()
-                    .title(format!("Value({})", ps_name))
-                    .title_alignment(Alignment::Center)
+                    .title(format!(" v{} - [{}] ", version, ps_name.clone()))
+                    .title_alignment(Alignment::Left)
+                    .title_style(Style::default().fg(Color::Yellow))
                     .borders(Borders::ALL)
-                    .border_type(BorderType::Double)
+                    .border_type(BorderType::Rounded)
+                    .border_style(border_style)
                     .padding(Padding::new(1, 1, 0, 1)),
             )
-            .style(Style::default().fg(Color::Rgb(83, 178, 226))),
+            .style(Style::default().fg(Color::LightCyan)),
         // .alignment(Alignment::Center),
         layout,
+    );
+
+    f.render_stateful_widget(
+        Scrollbar::new(ScrollbarOrientation::VerticalRight)
+            .begin_symbol(Some("↑"))
+            .end_symbol(Some("↓")),
+        layout,
+        &mut app.vertical_scroll_state,
     );
 }

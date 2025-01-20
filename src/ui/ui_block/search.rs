@@ -1,4 +1,4 @@
-use crate::app::ps_list_filter::user_input::InputMode;
+use crate::app::input::input::InputMode;
 use crate::app::App;
 use ratatui::{
     prelude::*,
@@ -7,11 +7,11 @@ use ratatui::{
 };
 
 pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect) {
-    let first_text_color = Style::default().fg(Color::Rgb(255, 126, 0));
+    let first_text_color = Style::default().fg(Color::LightGreen);
 
     let text = vec![Line::from(vec![
         Span::styled("🐩> ", first_text_color),
-        app.ps_filter_data.input.clone().into(),
+        app.search.1.input.clone().into(),
     ])];
 
     f.render_widget(
@@ -30,7 +30,7 @@ pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect) {
         layout,
     );
 
-    match app.ps_filter_data.input_mode {
+    match app.input_mode {
         InputMode::Normal =>
             // Hide the cursor. `Frame` does this by default, so we don't need to do anything here
             {}
@@ -39,10 +39,10 @@ pub fn render_search(app: &mut App, f: &mut Frame, layout: Rect) {
             // Make the cursor visible and ask ratatui to put it at the specified coordinates after
             // rendering
             #[allow(clippy::cast_possible_truncation)]
-            f.set_cursor(
-                layout.x + app.ps_filter_data.character_index as u16 + 6,
+            f.set_cursor_position(Position::new(
+                layout.x + app.search.1.character_index as u16 + 6,
                 layout.y + 1,
-            );
+            ));
         }
     }
 }

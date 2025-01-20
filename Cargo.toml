@@ -17,16 +17,17 @@ license = false
 eula = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
+# Sandesh
 [dependencies]
 aws-config = "1.5.13"
 aws-sdk-ssm = "1.59.0"
 chrono = "0.4.38"
 clap = { version = "4.5.16", features = ["derive"] }
-color-eyre = "0.6.2"
+color-eyre = "0.6.3"
 crossterm = "0.28.1"
+pretty_assertions = "1.4.1"
 rand = "0.8.5"
-ratatui = "0.25.0"
+ratatui = "0.29.0"
 time = "0.3.36"
 tokio = { version = "1.35.1", features = ["full"] }
 
@@ -44,7 +45,13 @@ ci = "github"
 # The installers to generate for each app
 installers = ["shell", "powershell", "npm", "homebrew", "msi"]
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl", "x86_64-pc-windows-msvc"]
+targets = [
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+  "x86_64-unknown-linux-gnu",
+  "x86_64-unknown-linux-musl",
+  "x86_64-pc-windows-msvc",
+]
 # The archive format to use for windows builds (defaults .zip)
 windows-archive = ".tar.gz"
 # The archive format to use for non-windows builds (defaults .tar.xz)

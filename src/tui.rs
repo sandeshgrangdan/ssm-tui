@@ -9,6 +9,8 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
+use ratatui::DefaultTerminal;
+
 pub type CrosstermTerminal = ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stderr>>;
 
 use crate::{app::App, ui};
@@ -21,14 +23,14 @@ use crate::{app::App, ui};
 /// initializing the interface and handling the draw events.
 pub struct Tui {
     /// Interface to the Terminal.
-    terminal: CrosstermTerminal,
+    terminal: DefaultTerminal,
 }
 // ANCHOR_END: tui
 
 // ANCHOR: tui_enter
 impl Tui {
     /// Constructs a new instance of [`Tui`].
-    pub fn new(terminal: CrosstermTerminal) -> Self {
+    pub fn new(terminal: DefaultTerminal) -> Self {
         Self { terminal }
     }
 
@@ -86,17 +88,13 @@ impl Tui {
     }
 
     pub fn init_vim(&mut self) -> Result<()> {
-        self.terminal.clear()?;
-        self.terminal.show_cursor()?;
-        self.terminal.flush()?;
-        terminal::disable_raw_mode()?;
+        ratatui::restore();
 
         Ok(())
     }
 
     pub fn exit_vim(&mut self) -> Result<()> {
-        terminal::enable_raw_mode()?;
-        crossterm::execute!(io::stderr(), EnterAlternateScreen, EnableMouseCapture)?;
+        self.terminal = ratatui::init();
 
         Ok(())
     }

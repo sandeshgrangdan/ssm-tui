@@ -1,5 +1,9 @@
+pub mod add_ps;
+pub mod delete_ps;
 pub mod details;
+pub mod help;
 pub mod metadata;
 pub mod ps_list;
 pub mod search;
 pub mod user_info;
+pub mod welcome;

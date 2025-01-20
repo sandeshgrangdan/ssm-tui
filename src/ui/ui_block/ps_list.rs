@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::app::{App, SelectedTab};
 use ratatui::{
     prelude::*,
     style::Style,
@@ -6,16 +6,22 @@ use ratatui::{
 };
 
 pub fn render_ps_list(app: &mut App, f: &mut Frame, layout: Rect) {
+    let border_style = match app.selected_tab {
+        SelectedTab::List => Style::default().fg(Color::LightRed),
+        _ => Style::default().fg(Color::Gray),
+    };
+
     let list = List::new(app.parameter_stores.display_items.clone())
         .block(
             Block::default()
                 .title(format!(
-                    "PS ({}), {}",
+                    " PS ({}) - [{}] ",
                     app.parameter_stores.list_title,
                     app.parameter_stores.display_items.len()
                 ))
                 // .title_alignment(Alignment::Center)
                 .borders(Borders::ALL)
+                .border_style(border_style)
                 .border_type(BorderType::Rounded),
         )
         .highlight_style(

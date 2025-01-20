@@ -13,7 +13,7 @@ use crate::app::{aws::parameter_store::SelectedPsMetadata, App};
 
 pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
     let mut ps_type = "None";
-    let mut ps_tire = "None";
+    let mut ps_tier = "None";
     let mut ps_data_type = "None";
     let mut ps_desc = "None";
     let mut modified_user = "None";
@@ -34,7 +34,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
                 None => "",
             };
 
-            ps_tire = match &ps_metadata.tier {
+            ps_tier = match &ps_metadata.tier {
                 Some(my_ps_tire) => match my_ps_tire {
                     Advanced => "Advanced",
                     IntelligentTiering => "IntelligentTiering",
@@ -73,7 +73,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
         SelectedPsMetadata::None => {}
     }
 
-    let first_text_color = Style::default().fg(Color::Rgb(255, 126, 0));
+    let first_text_color = Style::default().fg(Color::LightRed);
 
     let text = vec![
         Line::from(vec![
@@ -86,7 +86,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
         ]),
         Line::from(vec![
             Span::styled("Tier:        ", first_text_color),
-            ps_tire.gray().bold(),
+            ps_tier.gray().bold(),
         ]),
         Line::from(vec![
             Span::styled("Data type:   ", first_text_color),
@@ -117,7 +117,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
                     .border_type(BorderType::QuadrantInside)
                     .padding(Padding::new(2, 1, 1, 1)),
             )
-            .style(Style::default().fg(Color::White)),
+            .style(Style::default().fg(Color::Magenta)),
         // .alignment(Alignment::Center),
         layout,
     );
