@@ -1,11 +1,9 @@
-use crate::app::{aws::parameter_store::SelectedPsMetadata, App, SelectedTab};
+use crate::app::App;
 use ratatui::{
     prelude::*,
     style::{Color, Style},
     text::Text,
-    widgets::{
-        Block, BorderType, Borders, Padding, Paragraph, Scrollbar, ScrollbarOrientation, Wrap,
-    },
+    widgets::{Block, BorderType, Borders, Paragraph, Wrap},
 };
 
 pub const BANNER: &str = r"
@@ -16,7 +14,7 @@ pub const BANNER: &str = r"
 /____/____/_/ /_/ /_/      \__/\__,_/_/   
 ";
 
-pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect) {
+pub fn render_details(_app: &mut App, f: &mut Frame, layout: Rect) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(7), Constraint::Length(93)].as_ref())

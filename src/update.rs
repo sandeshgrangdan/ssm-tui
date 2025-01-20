@@ -195,12 +195,12 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui: &mut Tui) {
                         &app.parameter_stores.state.selected().unwrap_or_default();
                     let ps_name = &app.parameter_stores.display_items[*selected_ps_index].clone();
 
-                    if ps_name.to_string() == app.delete_ps.1.input {
-                        app.delete_ps(&ps_name).await;
+                    if *ps_name == app.delete_ps.1.input {
+                        app.delete_ps().await;
                         app.delete_ps.0 = false;
                         app.delete_ps.1 = UserInput::default();
                         app.input_mode = InputMode::Normal;
-                        if selected_ps_index.clone() > 0 {
+                        if *selected_ps_index > 0 {
                             app.parameter_stores
                                 .state
                                 .select(Some(selected_ps_index - 1));

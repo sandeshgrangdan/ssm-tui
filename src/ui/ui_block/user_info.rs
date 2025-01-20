@@ -2,7 +2,7 @@ use crate::app::App;
 use ratatui::{
     prelude::*,
     style::{Color, Style},
-    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap},
+    widgets::{Block, BorderType, Borders, Padding, Paragraph},
 };
 
 pub fn render_user_info(app: &mut App, f: &mut Frame, layout: Rect) {

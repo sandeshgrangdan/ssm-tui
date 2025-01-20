@@ -465,7 +465,7 @@ impl App {
         }
     }
 
-    pub async fn delete_ps(&mut self, ps_name: &String) {
+    pub async fn delete_ps(&mut self) {
         if let SsmClient::Client(client) = &self.ssm_client {
             client
                 .delete_parameter()

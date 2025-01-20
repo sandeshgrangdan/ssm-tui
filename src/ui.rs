@@ -1,4 +1,3 @@
-use layout::Flex;
 use ratatui::{layout::Layout, prelude::*};
 
 mod ui_block;

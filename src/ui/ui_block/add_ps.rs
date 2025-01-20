@@ -1,17 +1,10 @@
-use crate::app::{
-    aws::parameter_store::SelectedPsMetadata, input::input::InputMode, App, SelectedTab,
-};
+use crate::app::{input::input::InputMode, App};
 
 use aws_sdk_ssm::types::{ParameterTier, ParameterType};
-use color_eyre::owo_colors::OwoColorize;
-use layout::Flex;
 use ratatui::{
     prelude::*,
     style::{Color, Style},
-    text::Text,
-    widgets::{
-        Block, BorderType, Borders, Padding, Paragraph, Scrollbar, ScrollbarOrientation, Wrap,
-    },
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Wrap},
 };
 
 use super::help::popup_area;

@@ -3,9 +3,7 @@ use ratatui::{
     prelude::*,
     style::{Color, Style},
     text::Text,
-    widgets::{
-        Block, BorderType, Borders, Padding, Paragraph, Scrollbar, ScrollbarOrientation, Wrap,
-    },
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Scrollbar, ScrollbarOrientation},
 };
 
 pub fn render_details(app: &mut App, f: &mut Frame, layout: Rect) {
