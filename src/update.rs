@@ -1,7 +1,7 @@
 use aws_sdk_ssm::types::{ParameterTier, ParameterType};
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
-use crate::app::input::input::{InputMode, UserInput};
+use crate::app::input::user_input::{InputMode, UserInput};
 use crate::app::{App, SelectedTab};
 use crate::tui::Tui;
 

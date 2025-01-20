@@ -19,7 +19,7 @@ use aws_sdk_ssm::{
 use ratatui::text::Line;
 
 use crate::app::App;
-use crate::app::{aws, input::input::InputMode};
+use crate::app::{aws, input::user_input::InputMode};
 
 // ANCHOR: application
 #[derive(Debug, Clone)]
@@ -30,7 +30,7 @@ pub enum SsmClient {
 
 #[derive(Debug)]
 pub enum PsMetadata {
-    Data(ParameterMetadata),
+    Data(Box<ParameterMetadata>),
     None,
 }
 
@@ -243,7 +243,7 @@ pub async fn get_ps_metadata(parameter_name: &str, client: &Client) -> PsMetadat
         for data in metadatas {
             if let Some(name) = &data.name {
                 if *name == *parameter_name {
-                    result = PsMetadata::Data(data);
+                    result = PsMetadata::Data(Box::new(data));
                     break;
                 }
             }
@@ -402,7 +402,7 @@ impl App {
                                     if let aws::parameter_store::PsMetadata::Data(data) =
                                         aws::parameter_store::get_ps_metadata(ps_name, client).await
                                     {
-                                        self.parameter_stores.ps_metadata[index] = data;
+                                        self.parameter_stores.ps_metadata[index] = *data;
                                     }
                                 }
                             }

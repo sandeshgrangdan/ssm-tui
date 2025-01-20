@@ -4,7 +4,7 @@ use clap::Parser;
 use rand::Rng;
 
 use crate::ui::widgets::state_fullist::StatefulList;
-use input::input::{
+use input::user_input::{
     InputMode::{self, Editing, Normal},
     UserInput,
 };
@@ -131,7 +131,7 @@ mod tests {
     fn toggle_search() {
         let mut app = App::new(Args::parse());
         app.toggle_search();
-        assert!(app.filter_ps_list);
+        assert!(app.search.0);
     }
 
     #[test]

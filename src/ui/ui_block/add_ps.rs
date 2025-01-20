@@ -1,4 +1,4 @@
-use crate::app::{input::input::InputMode, App};
+use crate::app::{input::user_input::InputMode, App};
 
 use aws_sdk_ssm::types::{ParameterTier, ParameterType};
 use ratatui::{

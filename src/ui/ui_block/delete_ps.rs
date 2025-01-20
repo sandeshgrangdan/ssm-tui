@@ -5,7 +5,7 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Padding, Paragraph},
 };
 
-use crate::app::{aws::parameter_store::SelectedPsMetadata, input::input::InputMode, App};
+use crate::app::{aws::parameter_store::SelectedPsMetadata, input::user_input::InputMode, App};
 
 fn center(area: Rect, percent_x: usize) -> Rect {
     let [area] = Layout::horizontal([Constraint::Percentage(percent_x as u16)])

@@ -1,4 +1,4 @@
-use crate::app::input::input::InputMode;
+use crate::app::input::user_input::InputMode;
 use crate::app::App;
 use ratatui::{
     prelude::*,

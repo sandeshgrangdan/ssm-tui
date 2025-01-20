@@ -46,10 +46,8 @@ async fn main() -> Result<()> {
 
         // Handle events.
 
-        if let Ok(event) = my_event::read() {
-            if let my_event::Event::Key(key_event) = event {
-                update(&mut app, key_event, &mut tui).await
-            }
+        if let Ok(my_event::Event::Key(key_event)) = my_event::read() {
+            update(&mut app, key_event, &mut tui).await
         }
     }
 
