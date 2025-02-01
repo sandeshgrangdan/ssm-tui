@@ -144,7 +144,7 @@ pub async fn update(app: &mut App, key_event: KeyEvent, tui: &mut Tui) {
                 }
                 KeyCode::Enter => {
                     app.add().await;
-                    open_editor(app, tui).await;
+                    // open_editor(app, tui).await;
                 }
                 KeyCode::Char(to_insert) if app.add_ps.0 => {
                     app.add_ps.1.enter_char(to_insert);

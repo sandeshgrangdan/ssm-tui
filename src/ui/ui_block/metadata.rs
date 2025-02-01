@@ -35,7 +35,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
             };
 
             ps_tier = match &ps_metadata.tier {
-                Some(my_ps_tire) => match my_ps_tire {
+                Some(my_ps_tier) => match my_ps_tier {
                     Advanced => "Advanced",
                     IntelligentTiering => "IntelligentTiering",
                     Standard => "Standard",

@@ -20,17 +20,17 @@ This project serves as a learning exercise in [Rust](https://www.rust-lang.org/)
 
 ### Install prebuilt binaries via shell script (Linux, macOS)
 ```bash
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.3/ssm-tui-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.4/ssm-tui-installer.sh | sh
 ```
 
 ### Install prebuilt binaries via powershell script (Windows)
 ```bash
-powershell -c "irm https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.3/ssm-tui-installer.ps1 | iex"
+powershell -c "irm https://github.com/sandeshgrangdan/ssm-tui/releases/download/v0.1.4/ssm-tui-installer.ps1 | iex"
 ```
 
 ### Cargo
 
-Use this option if your architecture is not supported by the pre-built binaries found on the [releases page](https://github.com/Rigellute/ssm-tui/releases).
+Use this option if your architecture is not supported by the pre-built binaries found on the [releases page](https://github.com/sandeshgrangdan/ssm-tui/releases).
 
 First, install [Rust](https://www.rust-lang.org/tools/install) (using the recommended `rustup` installation method) and then
 

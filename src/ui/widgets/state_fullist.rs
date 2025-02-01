@@ -8,7 +8,7 @@ use crate::app::aws::parameter_store::ParameterStoreMetadata;
 #[derive(Debug, Clone)]
 pub struct StatefulList {
     pub state: ListState,
-    pub items: Arc<Vec<String>>,
+    pub items: Vec<String>,
     pub display_items: Vec<String>,
     pub last_selected: Option<usize>,
     pub ps_metadata: Vec<ParameterMetadata>,
@@ -26,7 +26,7 @@ impl StatefulList {
     pub fn new() -> Self {
         Self {
             state: ListState::default(),
-            items: Arc::new(vec![]),
+            items: vec![],
             display_items: vec![],
             last_selected: None,
             ps_metadata: vec![],

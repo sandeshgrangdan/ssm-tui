@@ -53,7 +53,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
         _ => "",
     };
 
-    let get_ps_tire = match app.ps_tier {
+    let get_ps_tier = match app.ps_tier {
         ParameterTier::Advanced => "Advanced",
         ParameterTier::IntelligentTiering => "IntelligentTiering",
         ParameterTier::Standard => "Standard",
@@ -95,7 +95,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
                             .bold(),
                     )
                     .title(
-                        Line::from(format!(" Tire: **{} ", get_ps_tire))
+                        Line::from(format!(" Tier: **{} ", get_ps_tier))
                             .left_aligned()
                             .fg(Color::LightBlue)
                             .bold(),

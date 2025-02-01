@@ -19,7 +19,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
     let main_app_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(if app.search.0 {
-            vec![Constraint::Min(20), Constraint::Length(3)]
+            vec![Constraint::Length(3), Constraint::Min(20)]
         } else {
             vec![Constraint::Min(20)]
         })
@@ -28,7 +28,11 @@ pub fn render(app: &mut App, f: &mut Frame) {
     let layout: std::rc::Rc<[Rect]> = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
-        .split(main_app_layout[0]);
+        .split(if app.search.0 {
+            main_app_layout[1]
+        } else {
+            main_app_layout[0]
+        });
 
     ui_block::metadata::render_metadata(app, f, top_layout[0]);
     ui_block::user_info::render_user_info(app, f, top_layout[1]);
@@ -41,7 +45,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
     // ui_block::welcome::render_details(app, f, layout[1]);
     // ui_block::details::render_details(app, f, layout[1]);
     if app.search.0 {
-        ui_block::search::render_search(app, f, main_app_layout[1]);
+        ui_block::search::render_search(app, f, main_app_layout[0]);
     }
 
     if app.add_ps.0 || app.add_ps_desc.0 {

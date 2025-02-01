@@ -3,7 +3,6 @@ use std::{
     fs::{self, File},
     io::{self, Write},
     process::Command,
-    sync::Arc,
 };
 
 use aws_config::{
@@ -269,7 +268,7 @@ impl App {
                 Ok((ps_metadata, ps_values, items)) => {
                     self.parameter_stores.ps_values = ps_values;
                     self.parameter_stores.ps_metadata = ps_metadata;
-                    self.parameter_stores.items = Arc::new(items.clone());
+                    self.parameter_stores.items = items.clone();
                     self.parameter_stores.display_items = items;
                 }
                 Err(err) => println!("{:?}", err),
@@ -442,20 +441,74 @@ impl App {
                 String::from("{}"),
                 self.ps_type.clone(),
                 self.ps_tier.clone(),
-                client,
+                &client.clone(),
             )
             .await
             .unwrap();
 
-            self.fetch_ps_data().await;
+            let new_ps_data = client
+                .clone()
+                .get_parameter()
+                .name(&self.add_ps.1.input)
+                .with_decryption(true)
+                .send()
+                .await
+                .unwrap();
+
+            if let Some(param) = new_ps_data.parameter() {
+                if let Some(index) = self
+                    .parameter_stores
+                    .ps_values
+                    .iter()
+                    .position(|param| param.name.as_deref() == Some(&self.add_ps.1.input))
+                {
+                    self.parameter_stores.ps_values[index] = ParameterStoreMetadata {
+                        name: param.name.clone(),
+                        arn: param.arn.clone(),
+                        value: param.value.clone(),
+                        store_type: param.r#type.clone(),
+                        version: param.version,
+                        last_modified_date: param.last_modified_date,
+                    };
+                } else {
+                    self.parameter_stores
+                        .ps_values
+                        .push(ParameterStoreMetadata {
+                            name: param.name.clone(),
+                            arn: param.arn.clone(),
+                            value: param.value.clone(),
+                            store_type: param.r#type.clone(),
+                            version: param.version,
+                            last_modified_date: param.last_modified_date,
+                        });
+                }
+            };
+            if let aws::parameter_store::PsMetadata::Data(data) =
+                aws::parameter_store::get_ps_metadata(&self.add_ps.1.input, client).await
+            {
+                self.parameter_stores.ps_metadata.push(*data);
+            }
+
+            self.search.1.input = String::new();
+            self.parameter_stores
+                .items
+                .push(self.add_ps.1.input.to_owned());
+
+            self.parameter_stores
+                .display_items
+                .push(self.add_ps.1.input.to_owned());
 
             if let Some(index) = self
                 .parameter_stores
-                .ps_metadata
+                .display_items
                 .iter()
-                .position(|param| param.name.as_deref() == Some(&self.add_ps.1.input))
+                .position(|param| param == &self.add_ps.1.input)
             {
-                self.parameter_stores.state.select(Some(index));
+                if index > 0 {
+                    self.parameter_stores.state.select(Some(index));
+                } else {
+                    self.parameter_stores.state.select(None);
+                }
                 self.add_ps.0 = false;
                 self.add_ps_desc.0 = false;
                 self.add_ps.1.input = String::new();
@@ -473,7 +526,26 @@ impl App {
                 .send()
                 .await
                 .unwrap();
-            self.fetch_ps_data().await;
+
+            self.parameter_stores
+                .items
+                .retain(|item| item != &self.delete_ps.1.input);
+
+            self.parameter_stores
+                .display_items
+                .retain(|item| item != &self.delete_ps.1.input);
+
+            let selected_index = self.parameter_stores.state.selected();
+
+            if let Some(selected_index) = selected_index {
+                if selected_index > 0 {
+                    self.parameter_stores.state.select(Some(selected_index - 1));
+                } else {
+                    self.parameter_stores.state.select(None);
+                }
+            } else {
+                self.parameter_stores.state.select(None);
+            }
         }
     }
 }

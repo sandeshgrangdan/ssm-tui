@@ -83,21 +83,29 @@ pub fn render(_app: &mut App, f: &mut Frame) {
             Span::styled("    Esc: ", key_style),
             Span::styled("disable add parameter form", desc_style),
         ]),
+        Line::from(vec![
+            Span::styled(" Ctrl-t: ", key_style),
+            Span::styled("change parameter store tier", desc_style),
+        ]),
+        Line::from(vec![
+            Span::styled(" Ctrl-s: ", key_style),
+            Span::styled("change parameter store type", desc_style),
+        ]),
         "\n\n".into(),
         Line::from(vec![Span::styled(
             "[ Delete Parameter Store ]",
             title_style,
         )]),
         Line::from(vec![
-            Span::styled("    a: ", key_style),
+            Span::styled("Ctrl-d: ", key_style),
             Span::styled("delete parameter store", desc_style),
         ]),
         Line::from(vec![
-            Span::styled("Enter: ", key_style),
+            Span::styled(" Enter: ", key_style),
             Span::styled("delete parameter store", desc_style),
         ]),
         Line::from(vec![
-            Span::styled("  Esc: ", key_style),
+            Span::styled("   Esc: ", key_style),
             Span::styled("disable delete parameter form", desc_style),
         ]),
     ];

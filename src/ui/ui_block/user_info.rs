@@ -7,13 +7,11 @@ use ratatui::{
 
 pub fn render_user_info(app: &mut App, f: &mut Frame, layout: Rect) {
     let text = vec![
-        "Use `Ctrl-C` to stop running.".into(),
-        "Use `▲ ▼` to scroll.".into(),
-        "Use `◄ ►` to move.".into(),
-        Line::from(vec![Span::styled(
-            "Use `/` to filter list.",
-            Style::default().fg(Color::LightRed),
-        )]),
+        "<a>      Add".into(),
+        "<Ctrl-d> Delete".into(),
+        "<?>      Help".into(),
+        "<r>      Reload".into(),
+        "<Ctrl-c> Stop".into(),
         Line::from(vec![Span::styled(
             "Use `e` or `Enter` to edit parameter store.",
             Style::default().fg(Color::Magenta),
