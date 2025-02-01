@@ -117,7 +117,7 @@ pub fn render_metadata(app: &mut App, f: &mut Frame, layout: Rect) {
                     .border_type(BorderType::QuadrantInside)
                     .padding(Padding::new(2, 1, 1, 1)),
             )
-            .style(Style::default().fg(Color::Magenta)),
+            .style(Style::default().fg(Color::White)),
         // .alignment(Alignment::Center),
         layout,
     );

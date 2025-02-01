@@ -35,7 +35,7 @@ pub fn render_user_info(app: &mut App, f: &mut Frame, layout: Rect) {
                     .border_type(BorderType::QuadrantInside)
                     .padding(Padding::new(1, 1, 1, 1)),
             )
-            .style(Style::default().fg(Color::LightBlue))
+            .style(Style::default().fg(Color::Green))
             .alignment(Alignment::Left),
         layout,
     );
