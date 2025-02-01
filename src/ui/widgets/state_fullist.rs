@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use aws_sdk_ssm::types::ParameterMetadata;
 use ratatui::widgets::ListState;
 
