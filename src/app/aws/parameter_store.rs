@@ -1,8 +1,5 @@
 use std::{
-    env,
-    fs::{self, File},
-    io::{self, Write},
-    process::Command,
+    collections::BTreeSet, env, fs::{self, File}, io::{self, Write}, process::Command
 };
 
 use aws_config::{
@@ -420,8 +417,14 @@ impl App {
         } else {
             self.parameter_stores.list_title = self.search.1.input.to_string();
 
-            self.parameter_stores.display_items = self
-                .parameter_stores
+            let filter_from_content: Vec<String> = self.parameter_stores
+                .ps_values.iter()
+                .filter(|value| value.value.clone().unwrap_or(String::new()).to_lowercase().contains(&self.search.1.input.trim().to_lowercase()))
+                .map(|p| p.name.clone().unwrap_or(String::new()))
+                .collect();
+
+            let filter_list: Vec<String>  = self
+            .parameter_stores
                 .items
                 .iter()
                 .filter(|name| {
@@ -431,6 +434,14 @@ impl App {
                 })
                 .cloned()
                 .collect();
+
+            let merged: Vec<String> = filter_from_content.into_iter()
+                .chain(filter_list.into_iter())   // Merge iterators
+                .collect::<BTreeSet<_>>()  // Remove duplicates & sort
+                .into_iter()
+                .collect();
+
+            self.parameter_stores.display_items = merged;
         }
     }
 
